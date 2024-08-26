@@ -2,12 +2,11 @@ import pyautogui
 import signal
 import sys
 import random
-import csv
+import json
 import time
 import argparse
 import tkinter as tk
 
-# TODO: Specify the event click location as a click box, not exact coordinates.
 # TODO: Add a 3-5 minute idle time randomly in the run
 # TODO: Add logging to file
 
@@ -37,15 +36,16 @@ class ClickBox:
             return self.__random_point_in_triangle(
                 self._vertices[0], self._vertices[2], self._vertices[3])
 
+    def __str__(self):
+        vertice_strs = [f"({v[0]},{v[1]})" for v in self._vertices]
+        return ",".join(vertice_strs)
+
 
 class MouseEvent:
-    NUM_FIELDS = 6
-
-    def __init__(self, id: str, x: int, y: int,
+    def __init__(self, id: str, click_box: ClickBox,
                  button: str, min_delay_sec: float, max_delay_sec: float):
         self.id = id
-        self.x = x
-        self.y = y
+        self.click_box = click_box
         self.button = button
         self.min_delay_sec = min_delay_sec
         self.max_delay_sec = max_delay_sec
@@ -53,8 +53,7 @@ class MouseEvent:
     def __str__(self):
         return ",".join([
             f"{self.id}",
-            f"{self.x}",
-            f"{self.y}",
+            f"{self.click_box}",
             f"{self.button}",
             f"{self.min_delay_sec}"
             f"{self.max_delay_sec}"
@@ -105,21 +104,19 @@ class Script:
         self._events = self.__parse_events(conf.event_file)
         self._mouse_ctrl = MouseController()
 
-    def __parse_events(self, script_csv: str) -> list[MouseEvent]:
+    def __parse_events(self, script_json: str) -> list[MouseEvent]:
+        data = None
+        with open(script_json, 'r') as file:
+            data = json.load(file)
+
         events = []
-        with open(script_csv, 'r') as csvfile:
-            reader = csv.reader(csvfile)
-            for row in reader:
-                if (len(row) != MouseEvent.NUM_FIELDS):
-                    raise ValueError(
-                        f"invalid number of fields in CSV row: {row}\n")
-                id, x, y, button, min_delay_sec, max_delay_sec = row
-                events.append(MouseEvent(id,
-                              int(x.strip()),
-                              int(y.strip()),
-                              button,
-                              float(min_delay_sec.strip()),
-                              float(max_delay_sec.strip())))
+        for e in data["events"]:
+            events.append(MouseEvent(
+                e["id"],
+                ClickBox([(x, y) for x, y in e["click_box"]]),
+                e["button"],
+                e["min_delay_sec"],
+                e["max_delay_sec"]))
         return events
 
     def __do_random_mvmts(self):
@@ -130,8 +127,12 @@ class Script:
 
     def __exec_event(self, event: MouseEvent):
         mouse_delay_sec = random.uniform(*self._conf.mouse_delay_sec)
-        print(f"performing event: {event} with delay {mouse_delay_sec}")
-        self._mouse_ctrl.move_mouse(event.x, event.y, mouse_delay_sec)
+        mouse_pos = event.click_box.get_rand_point()
+        print(f"performing event: {event}")
+        print(f"event_delay_sec={mouse_delay_sec} sec "
+              f"mouse_pos=({mouse_pos[0]}, {mouse_pos[1]})")
+        self._mouse_ctrl.move_mouse(
+            mouse_pos[0], mouse_pos[1], mouse_delay_sec)
 
         if event.button:
             self._mouse_ctrl.click(event.button)
@@ -162,7 +163,8 @@ if __name__ == "__main__":
             description="run a runescape bot script",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         parser.add_argument("script", type=str,
-                            help="path to CSV file containing script commands")
+                            help="path to JSON file containing script "
+                            "commands")
         parser.add_argument("--runtime", "-r", type=int, default=3600,
                             help="script runtime in seconds")
         parser.add_argument("--max-rand-mvmts", "-m", type=int, default=5,
