@@ -9,6 +9,33 @@ import tkinter as tk
 
 # TODO: Specify the event click location as a click box, not exact coordinates.
 # TODO: Add a 3-5 minute idle time randomly in the run
+# TODO: Add logging to file
+
+
+class ClickBox:
+    def __init__(self, vertices: list[tuple[int]]):
+        self._vertices = vertices
+
+    def __random_point_in_triangle(self, v1, v2, v3) -> tuple[int]:
+        s = random.random()
+        t = random.random()
+        # Ensure the point is inside the triangle
+        if s + t > 1:
+            s = 1 - s
+            t = 1 - t
+        x = v1[0] + s * (v2[0] - v1[0]) + t * (v3[0] - v1[0])
+        y = v1[1] + s * (v2[1] - v1[1]) + t * (v3[1] - v1[1])
+        return (x, y)
+
+    def get_rand_point(self):
+        if random.random() < 0.5:
+            # Generate a point in the first triangle
+            return self.__random_point_in_triangle(
+                self._vertices[0], self._vertices[1], self._vertices[2])
+        else:
+            # Generate a point in the second triangle
+            return self.__random_point_in_triangle(
+                self._vertices[0], self._vertices[2], self._vertices[3])
 
 
 class MouseEvent:
