@@ -46,6 +46,7 @@ import random
 import json
 import time
 import argparse
+import logging
 import tkinter as tk
 from dataclasses import dataclass
 import pyautogui
@@ -111,7 +112,7 @@ class MouseEvent:
     Fields:
         event_id: A string describing this event.
         click_box: The area within which this event will perform its click.
-        button: The mouse button that will be clicked. Must be one of "left" or "right". 
+        button: The mouse button that will be clicked. Must be one of "left" or "right".
         min_delay_sec: The minimum delay in seconds following the click.
         max_delay_sec: The maximum delay in seconds following the click.
     """
@@ -136,7 +137,7 @@ class MouseEvent:
 class MouseController:
     """Provide an API for controlling the mouse.
 
-    The mouse controller is aware of the dimensions of the user's screen. The controller will 
+    The mouse controller is aware of the dimensions of the user's screen. The controller will
     report an error whenever the user attempts to perform an operation outside screen bounds.
     """
 
@@ -152,8 +153,8 @@ class MouseController:
         Args:
             x: Screen column.
             y: Screen row.
-            duration_sec: The duration over which the move from the current location to the target 
-                          location will be made. If the value is less than 0.1, then the mouse will 
+            duration_sec: The duration over which the move from the current location to the target
+                          location will be made. If the value is less than 0.1, then the mouse will
                           move instantly.
         Throws:
             ValueError: When x or y are out of the screen's bounds.
@@ -168,7 +169,7 @@ class MouseController:
         """Perform a left or right mouse button click.
 
         Args:
-            button: The mouse button that will be clicked. Must be one of "left" or "right". 
+            button: The mouse button that will be clicked. Must be one of "left" or "right".
         Throws:
             ValueError: When an unsupported button type is detected.
         """
@@ -180,12 +181,15 @@ class MouseController:
         """Move the mouse to a random location over a randomized period of time.
 
         Args:
-            duration_sec: A tuple of two elements representing a mouse movement delay range. 
+            duration_sec: A tuple of two elements representing a mouse movement delay range.
                           A random delay in seconds is chosen from this range.
         """
         x = random.randrange(0, self._screen_width - 1)
         y = random.randrange(0, self._screen_height - 1)
         rand_duration_sec = random.uniform(duration_sec[0], duration_sec[1])
+        logging.debug(
+            "random mouse movement params: x=%d y=%d duration=%0.4f sec",
+            x, y, rand_duration_sec)
         self.move_mouse(x, y, rand_duration_sec)
 
 
@@ -251,6 +255,7 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
     def _do_random_mvmts(self) -> None:
         """Execute a number of random mouse movements."""
         nrand_mvmts = random.randrange(self._conf.max_rand_mvmts)
+        logging.debug("performing %d random mouse movement(s)", nrand_mvmts)
         for _ in range(nrand_mvmts):
             self._mouse_ctrl.perform_random_movement(
                 self._conf.mouse_delay)
@@ -261,9 +266,11 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         # point is meant to avoid bot detection.
         mouse_delay_sec = random.uniform(*self._conf.mouse_delay)
         mouse_pos = event.click_box.get_rand_point()
-        print(f"performing event: {event}")
-        print(f"event_delay_sec={mouse_delay_sec} sec "
-              f"mouse_pos=({mouse_pos[0]}, {mouse_pos[1]})")
+        logging.info("executing event: %s", event.event_id)
+        logging.debug(
+            "delaying movement to position by %0.4f sec ", mouse_delay_sec)
+        logging.debug("clicking at position (%d, %d)",
+                      mouse_pos[0], mouse_pos[1])
         self._mouse_ctrl.move_mouse(
             mouse_pos[0], mouse_pos[1], mouse_delay_sec)
         self._mouse_ctrl.click(event.button)
@@ -273,14 +280,15 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         # detection.
         event_delay_sec = random.uniform(
             event.min_delay_sec, event.max_delay_sec)
-        print(f"adding post event delay of {event_delay_sec} sec")
+        logging.debug("executing post event delay of %0.4f sec",
+                      event_delay_sec)
         time.sleep(event_delay_sec)
 
     def _exec_events(self) -> None:
         """Execute all mouse events inserting random gestures before each event execution.
 
         It's debated on botting forums whether adding a few random gestures helps avoid detection.
-        As a precaution, we are adding random gestures before each event execution. The reduction 
+        As a precaution, we are adding random gestures before each event execution. The reduction
         in exp/hr is worth the potential gains in detection avoidance.
         """
         for event in self._events:
@@ -290,11 +298,11 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
     def run(self) -> None:
         """Execute the bot's event script.
 
-        This is a blocking method call. The script can only be interrupted by sending SIGINT to 
+        This is a blocking method call. The script can only be interrupted by sending SIGINT to
         the running process or pressing CTRL+c at the prompt from which the program was run.
 
         The script runs for the configured runtime. The configured events are performed repeatedly.
-        Idles are inserted periodically to reduce the probability of detection. The idle period 
+        Idles are inserted periodically to reduce the probability of detection. The idle period
         and idle time are configurable at the command line.
         """
         start_time = time.time()
@@ -306,7 +314,7 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
                 idle_time_sec = random.uniform(
                     self._conf.idle_time[0] * 60,
                     self._conf.idle_time[1] * 60)
-                print(f"idling for {idle_time_sec} sec")
+                logging.info("idling for %0.4f sec", idle_time_sec)
                 time.sleep(idle_time_sec)
                 idle_time = time.time()
             curr_time = time.time()
@@ -341,13 +349,28 @@ if __name__ == "__main__":
                             type=float, default=[2, 5],
                             help="defines a range in minutes from which an "
                             "idle time will be randomly chosen")
+        parser.add_argument("--debug", "-g", action="store_true",
+                            help="enable logging of debug messages")
+        parser.add_argument("--log-file", "-l", type=str,
+                            help="output all log messages to the specified file")
         args = parser.parse_args()
 
-        script = Script(args)
+        if args.log_file:
+            logging.basicConfig(style="{",
+                                level=logging.DEBUG if args.debug else logging.INFO,
+                                filename=args.log_file,
+                                filemode="a",
+                                encoding="ascii",
+                                format="{asctime} [{levelname}]: {message}")
+        else:
+            logging.basicConfig(style="{",
+                                level=logging.DEBUG if args.debug else logging.INFO,
+                                format="{asctime} [{levelname}]: {message}")
 
+        script = Script(args)
         if args.start_delay:
-            print(f"starting script in {args.start_delay} seconds...")
+            logging.info("running script in %d seconds...", args.start_delay)
             time.sleep(args.start_delay)
         script.run()
     except ValueError as error:
-        print(f"fatal error: {error}")
+        logging.fatal("value error, %s", error)
