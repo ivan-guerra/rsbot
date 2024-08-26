@@ -7,7 +7,6 @@ import time
 import argparse
 import tkinter as tk
 
-# TODO: Add a 3-5 minute idle time randomly in the run
 # TODO: Add logging to file
 
 
@@ -81,9 +80,12 @@ class MouseController:
 
 class ScriptConfig:
     def __init__(self, runtime_sec: int, event_file: str,
+                 idle_period_sec: float, idle_time_min: list[float],
                  max_rand_mvmts: int = 5,
                  mouse_delay_sec: tuple[float] = (0.25, 0.75)):
         self.runtime_sec = runtime_sec
+        self.idle_period_sec = idle_period_sec
+        self.idle_time_min = idle_time_min
         self.max_rand_mvmts = max_rand_mvmts
         self.mouse_delay_sec = mouse_delay_sec
         self.event_file = event_file
@@ -93,6 +95,8 @@ class ScriptConfig:
             "script config:\n\t",
             f"runtime_sec = {self.runtime_sec}\n\t",
             f"event_file = {self.event_file}\n\t",
+            f"idle_period_sec = {self.idle_period_sec}\n\t",
+            f"idle_time_min = {self.idle_time_min}\n\t",
             f"max_rand_mvmts = {self.max_rand_mvmts}\n\t",
             f"mouse_delay_sec = {self.mouse_delay_sec}"
         ])
@@ -149,9 +153,17 @@ class Script:
 
     def run(self):
         start_time = time.time()
-        curr_time = time.time()
+        curr_time = start_time
+        idle_time = start_time
         while (curr_time - start_time) < self._conf.runtime_sec:
             self.__exec_events()
+            if (curr_time - idle_time) > self._conf.idle_period_sec:
+                idle_time_sec = random.uniform(
+                    self._conf.idle_time_min[0] * 60,
+                    self._conf.idle_time_min[1] * 60)
+                print(f"idling for {idle_time_sec} sec")
+                time.sleep(idle_time_sec)
+                idle_time = time.time()
             curr_time = time.time()
 
 
@@ -170,15 +182,23 @@ if __name__ == "__main__":
         parser.add_argument("--max-rand-mvmts", "-m", type=int, default=5,
                             help="max number of random mouse movements "
                             "performed before each event")
-        parser.add_argument('--mouse-delay', "-d", nargs='+',
+        parser.add_argument('--mouse-delay', "-d", nargs="+",
                             type=float, default=[0.25, 0.75],
                             help="defines a range in seconds from which a "
                             "delay for each mouse movement will be "
                             "randomly chosen")
+        parser.add_argument("--idle-period", "-p", type=float, default=900,
+                            help="number of seconds until an idle wait is "
+                            "started")
+        parser.add_argument("--idle-time", "-i", nargs="+",
+                            type=float, default=[2, 5],
+                            help="defines a range in minutes from which an "
+                            "idle time will be randomly chosen")
         args = parser.parse_args()
 
         conf = ScriptConfig(
             args.runtime, args.script,
+            args.idle_period, args.idle_time,
             args.max_rand_mvmts, args.mouse_delay)
         script = Script(conf)
 
