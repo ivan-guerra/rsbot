@@ -324,6 +324,8 @@ if __name__ == "__main__":
                             "commands")
         parser.add_argument("--runtime", "-r", type=int, default=3600,
                             help="script runtime in seconds")
+        parser.add_argument("--start-delay", "-s", type=int,
+                            help="script start delay in seconds")
         parser.add_argument("--max-rand-mvmts", "-m", type=int, default=5,
                             help="max number of random mouse movements "
                             "performed before each event")
@@ -343,8 +345,9 @@ if __name__ == "__main__":
 
         script = Script(args)
 
-        print("starting script in 5 seconds...")
-        time.sleep(5)
+        if args.start_delay:
+            print(f"starting script in {args.start_delay} seconds...")
+            time.sleep(args.start_delay)
         script.run()
     except ValueError as error:
         print(f"fatal error: {error}")
