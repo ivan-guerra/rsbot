@@ -8,6 +8,7 @@ import argparse
 import tkinter as tk
 
 # TODO: Add logging to file
+# TODO: Add a startup delay in seconds
 
 
 class ClickBox:
@@ -182,7 +183,7 @@ if __name__ == "__main__":
         parser.add_argument("--max-rand-mvmts", "-m", type=int, default=5,
                             help="max number of random mouse movements "
                             "performed before each event")
-        parser.add_argument('--mouse-delay', "-d", nargs="+",
+        parser.add_argument('--mouse-delay', "-d", nargs=2,
                             type=float, default=[0.25, 0.75],
                             help="defines a range in seconds from which a "
                             "delay for each mouse movement will be "
@@ -190,7 +191,7 @@ if __name__ == "__main__":
         parser.add_argument("--idle-period", "-p", type=float, default=900,
                             help="number of seconds until an idle wait is "
                             "started")
-        parser.add_argument("--idle-time", "-i", nargs="+",
+        parser.add_argument("--idle-time", "-i", nargs=2,
                             type=float, default=[2, 5],
                             help="defines a range in minutes from which an "
                             "idle time will be randomly chosen")
