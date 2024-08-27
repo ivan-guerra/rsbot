@@ -148,23 +148,7 @@ class MouseController:
         self._screen_width = root.winfo_screenwidth()
         self._screen_height = root.winfo_screenheight()
 
-    def _generate_random_bezier_curve(self, num_control_points: int) -> list[tuple[int]]:
-        """Generate a random Bezier curve with the specified number of control points.
-
-        Args:
-            num_control_points: The number of control points for the curve.
-        Returns:
-            A list of control points, each represented as a tuple (x, y).
-        """
-        control_points = []
-        for _ in range(num_control_points):
-            x = random.randint(0, self._screen_width)
-            y = random.randint(0, self._screen_height)
-            control_points.append((x, y))
-        return control_points
-
-    def _move_mouse_along_bezier_curve(
-            self, control_points: list[tuple[int]], duration_sec: float) -> None:
+    def move_mouse(self, control_points: list[tuple[int]], duration_sec: float) -> None:
         """Move the mouse along a Bezier curve defined by the given control points.
 
         Args:
@@ -187,28 +171,6 @@ class MouseController:
             pyautogui.moveTo(x, y, duration=dt)
             t += dt
 
-    def move_mouse(self, x: int, y: int, duration_sec: float = 0.0) -> None:
-        """Move the mouse to the parameter (x, y) location.
-
-        Args:
-            x: Screen column.
-            y: Screen row.
-            duration_sec: The duration over which the move from the current location to the target
-                          location will be made. If the value is less than 0.1, then the mouse will
-                          move instantly.
-        Throws:
-            ValueError: When x or y are out of the screen's bounds.
-        """
-        if x < 0 or x > self._screen_width:
-            raise ValueError("requested column {x} is out of bounds")
-        if y < 0 or y > self._screen_height:
-            raise ValueError("requested row {y} is out of bounds")
-
-        num_control_points = 4
-        control_points = self._generate_random_bezier_curve(num_control_points)
-        control_points.append((x, y))
-        self._move_mouse_along_bezier_curve(control_points, duration_sec)
-
     def click(self, button: str) -> None:
         """Perform a left or right mouse button click.
 
@@ -220,21 +182,6 @@ class MouseController:
         if button not in ["left", "right"]:
             raise ValueError(f"unexpected button value: {button}")
         pyautogui.click(button=button)
-
-    def perform_random_movement(self, duration_sec: tuple[float]) -> None:
-        """Move the mouse to a random location over a randomized period of time.
-
-        Args:
-            duration_sec: A tuple of two elements representing a mouse movement delay range.
-                          A random delay in seconds is chosen from this range.
-        """
-        x = random.randrange(0, self._screen_width - 1)
-        y = random.randrange(0, self._screen_height - 1)
-        rand_duration_sec = random.uniform(duration_sec[0], duration_sec[1])
-        logging.debug(
-            "random mouse movement params: x=%d y=%d duration=%0.4f sec",
-            x, y, rand_duration_sec)
-        self.move_mouse(x, y, rand_duration_sec)
 
 
 class Script:  # pylint: disable=locally-disabled, too-few-public-methods
@@ -251,6 +198,22 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         self._conf = conf
         self._events = self._parse_events(conf.script)
         self._mouse_ctrl = MouseController()
+
+    def _generate_random_bezier_curve(self, num_control_points: int) -> list[tuple[int]]:
+        """Generate a random Bezier curve with the specified number of control points.
+
+        Args:
+            num_control_points: The number of control points for the curve.
+        Returns:
+            A list of control points, each represented as a tuple (x, y).
+        """
+        root = tk.Tk()
+        control_points = []
+        for _ in range(num_control_points):
+            x = random.randint(0, root.winfo_screenwidth())
+            y = random.randint(0, root.winfo_screenheight())
+            control_points.append((x, y))
+        return control_points
 
     def _parse_events(self, script_json: str) -> list[MouseEvent]:
         """Read events from a JSON script file.
@@ -296,18 +259,10 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
                 event["max_delay_sec"]))
         return events
 
-    def _do_random_mvmts(self) -> None:
-        """Execute a number of random mouse movements."""
-        nrand_mvmts = random.randrange(self._conf.max_rand_mvmts)
-        logging.debug("performing %d random mouse movement(s)", nrand_mvmts)
-        for _ in range(nrand_mvmts):
-            self._mouse_ctrl.perform_random_movement(
-                self._conf.mouse_delay)
-
     def _exec_event(self, event: MouseEvent) -> None:
         """Execute a scripted mouse event."""
-        # Simulate clicking a target NPC or object. The randomization in both the click delay and
-        # point is meant to avoid bot detection.
+        # Randomizing both the click delay and click point is thought to reduce
+        # the chance of the bot being detected.
         mouse_delay_sec = random.uniform(*self._conf.mouse_delay)
         mouse_pos = event.click_box.get_rand_point()
         logging.info("executing event: %s", event.event_id)
@@ -315,8 +270,15 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
             "delaying movement to position by %0.4f sec ", mouse_delay_sec)
         logging.debug("clicking at position (%d, %d)",
                       mouse_pos[0], mouse_pos[1])
-        self._mouse_ctrl.move_mouse(
-            mouse_pos[0], mouse_pos[1], mouse_delay_sec)
+
+        # When moving the mouse to the target, move along a "natural" curve.
+        num_control_points = random.randint(*self._conf.mouse_ctrl_points)
+        logging.debug("using %d points to model mouse trajectory",
+                      num_control_points)
+        control_points = self._generate_random_bezier_curve(num_control_points)
+        control_points.append(mouse_pos)
+        self._mouse_ctrl.move_mouse(control_points, mouse_delay_sec)
+
         self._mouse_ctrl.click(event.button)
 
         # Some events require lengthy delays. For example, when fletching an inventory of logs.
@@ -327,17 +289,6 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         logging.debug("executing post event delay of %0.4f sec",
                       event_delay_sec)
         time.sleep(event_delay_sec)
-
-    def _exec_events(self) -> None:
-        """Execute all mouse events inserting random gestures before each event execution.
-
-        It's debated on botting forums whether adding a few random gestures helps avoid detection.
-        As a precaution, we are adding random gestures before each event execution. The reduction
-        in exp/hr is worth the potential gains in detection avoidance.
-        """
-        for event in self._events:
-            self._do_random_mvmts()
-            self._exec_event(event)
 
     def run(self) -> None:
         """Execute the bot's event script.
@@ -353,7 +304,9 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         curr_time = start_time
         idle_time = start_time
         while (curr_time - start_time) < self._conf.runtime:
-            self._exec_events()
+            for event in self._events:
+                self._exec_event(event)
+
             if (curr_time - idle_time) > self._conf.idle_period:
                 idle_time_sec = random.uniform(
                     self._conf.idle_time[0] * 60,
@@ -378,14 +331,16 @@ if __name__ == "__main__":
                             help="script runtime in seconds")
         parser.add_argument("--start-delay", "-s", type=int,
                             help="script start delay in seconds")
-        parser.add_argument("--max-rand-mvmts", "-m", type=int, default=5,
-                            help="max number of random mouse movements "
-                            "performed before each event")
         parser.add_argument('--mouse-delay', "-d", nargs=2,
-                            type=float, default=[0.25, 0.75],
+                            type=float, default=[0.1, 0.25],
                             help="defines a range in seconds from which a "
                             "delay for each mouse movement will be "
                             "randomly chosen")
+        parser.add_argument('--mouse-ctrl-points', "-c", nargs=2,
+                            type=int, default=[6, 10],
+                            help="defines a range from which the number "
+                            "of points on the mouse movement curve will be "
+                            "randomly chosen before each event")
         parser.add_argument("--idle-period", "-p", type=float, default=900,
                             help="number of seconds until an idle wait is "
                             "started")
