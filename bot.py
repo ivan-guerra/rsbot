@@ -145,16 +145,27 @@ class MouseController:
     def __init__(self) -> None:
         """Construct the mouse controller."""
         root = tk.Tk()
-        self._screen_width = root.winfo_screenwidth()
-        self._screen_height = root.winfo_screenheight()
+        self.SCREEN_WIDTH = root.winfo_screenwidth()
+        self.SCREEN_HEIGHT = root.winfo_screenheight()
 
-    def move_mouse(self, control_points: list[tuple[int]], duration_sec: float) -> None:
+    def move_mouse(self,
+                   start_point: tuple[int],
+                   end_point: tuple[int],
+                   control_points: list[tuple[int]],
+                   duration_sec: float) -> None:
         """Move the mouse along a Bezier curve defined by the given control points.
+
+        The cursor will always begin at exactly the location specified by start_point.
+        Likewise, the cursor will always come to a stop at end_point. The 
+        control_points are used as references to control the drawing of the line.
+        There is no guarantee the mouse will pass through the control points.
 
         Args:
             control_points: A list of control points for the curve.
             duration_sec: The duration of the mouse movement in seconds.
         """
+        pyautogui.moveTo(start_point[0], start_point[1], duration=duration_sec)
+
         frames_per_sec = 60
         t = 0
         dt = 1 / (duration_sec * frames_per_sec)
@@ -170,6 +181,8 @@ class MouseController:
                                          1 - i) * t ** i * y1
             pyautogui.moveTo(x, y, duration=dt)
             t += dt
+
+        pyautogui.moveTo(end_point[0], end_point[1], duration=duration_sec)
 
     def click(self, button: str) -> None:
         """Perform a left or right mouse button click.
@@ -208,11 +221,10 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         Returns:
             A list of control points, each represented as a tuple (x, y).
         """
-        root = tk.Tk()
         control_points = []
         for _ in range(num_control_points):
-            x = random.randint(0, root.winfo_screenwidth())
-            y = random.randint(0, root.winfo_screenheight())
+            x = random.randint(0, self._mouse_ctrl.SCREEN_WIDTH - 1)
+            y = random.randint(0, self._mouse_ctrl.SCREEN_HEIGHT - 1)
             control_points.append((x, y))
         return control_points
 
@@ -265,32 +277,29 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         # Randomizing both the click delay and click point is thought to reduce
         # the chance of the bot being detected.
         mouse_delay_sec = random.uniform(*self._conf.mouse_delay)
-        mouse_pos = event.click_box.get_rand_point()
         logging.info("executing event: %s", event.event_id)
         logging.debug(
             "delaying movement to position by %0.4f sec ", mouse_delay_sec)
-        logging.debug("clicking at position (%d, %d)",
-                      mouse_pos[0], mouse_pos[1])
 
         # When moving the mouse to the target, move along a "natural" curve.
         num_control_points = random.randint(*self._conf.mouse_ctrl_points)
         logging.debug("using %d points to model mouse trajectory",
                       num_control_points)
-        # The following if/else logic helps us pickup our mouse movement from where the
-        # last event terminated. Doing so keeps the mouse from suddenly jumping across
-        # the screen between different events.
-        if not self._mouse_ctrl_points:
-            self._mouse_ctrl_points = self._generate_random_bezier_curve(
-                num_control_points)
-        else:
+
+        start_point = (random.randint(0, self._mouse_ctrl.SCREEN_WIDTH - 1),
+                       random.randint(0, self._mouse_ctrl.SCREEN_HEIGHT - 1))
+        if self._mouse_ctrl_points:
+            # Start the next curve where the last one left off.
             start_point = self._mouse_ctrl_points[-1]
-            self._mouse_ctrl_points = self._generate_random_bezier_curve(
-                num_control_points)
-            self._mouse_ctrl_points.insert(0, start_point)
+        end_point = event.click_box.get_rand_point()
 
-        self._mouse_ctrl_points.append(mouse_pos)
-        self._mouse_ctrl.move_mouse(self._mouse_ctrl_points, mouse_delay_sec)
+        self._mouse_ctrl_points = self._generate_random_bezier_curve(
+            num_control_points)
+        self._mouse_ctrl.move_mouse(
+            start_point, end_point, self._mouse_ctrl_points, mouse_delay_sec)
 
+        logging.debug("clicking at position (%d, %d)",
+                      end_point[0], end_point[1])
         self._mouse_ctrl.click(event.button)
 
         # Some events require lengthy delays. For example, when fletching an inventory of logs.
