@@ -198,6 +198,7 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         self._conf = conf
         self._events = self._parse_events(conf.script)
         self._mouse_ctrl = MouseController()
+        self._mouse_ctrl_points = []
 
     def _generate_random_bezier_curve(self, num_control_points: int) -> list[tuple[int]]:
         """Generate a random Bezier curve with the specified number of control points.
@@ -275,9 +276,20 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         num_control_points = random.randint(*self._conf.mouse_ctrl_points)
         logging.debug("using %d points to model mouse trajectory",
                       num_control_points)
-        control_points = self._generate_random_bezier_curve(num_control_points)
-        control_points.append(mouse_pos)
-        self._mouse_ctrl.move_mouse(control_points, mouse_delay_sec)
+        # The following if/else logic helps us pickup our mouse movement from where the
+        # last event terminated. Doing so keeps the mouse from suddenly jumping across
+        # the screen between different events.
+        if not self._mouse_ctrl_points:
+            self._mouse_ctrl_points = self._generate_random_bezier_curve(
+                num_control_points)
+        else:
+            start_point = self._mouse_ctrl_points[-1]
+            self._mouse_ctrl_points = self._generate_random_bezier_curve(
+                num_control_points)
+            self._mouse_ctrl_points.insert(0, start_point)
+
+        self._mouse_ctrl_points.append(mouse_pos)
+        self._mouse_ctrl.move_mouse(self._mouse_ctrl_points, mouse_delay_sec)
 
         self._mouse_ctrl.click(event.button)
 
