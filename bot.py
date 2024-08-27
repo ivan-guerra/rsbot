@@ -47,6 +47,7 @@ import json
 import time
 import argparse
 import logging
+import math
 import tkinter as tk
 from dataclasses import dataclass
 import pyautogui
@@ -147,6 +148,45 @@ class MouseController:
         self._screen_width = root.winfo_screenwidth()
         self._screen_height = root.winfo_screenheight()
 
+    def _generate_random_bezier_curve(self, num_control_points: int) -> list[tuple[int]]:
+        """Generate a random Bezier curve with the specified number of control points.
+
+        Args:
+            num_control_points: The number of control points for the curve.
+        Returns:
+            A list of control points, each represented as a tuple (x, y).
+        """
+        control_points = []
+        for _ in range(num_control_points):
+            x = random.randint(0, self._screen_width)
+            y = random.randint(0, self._screen_height)
+            control_points.append((x, y))
+        return control_points
+
+    def _move_mouse_along_bezier_curve(
+            self, control_points: list[tuple[int]], duration_sec: float) -> None:
+        """Move the mouse along a Bezier curve defined by the given control points.
+
+        Args:
+            control_points: A list of control points for the curve.
+            duration_sec: The duration of the mouse movement in seconds.
+        """
+        frames_per_sec = 60
+        t = 0
+        dt = 1 / (duration_sec * frames_per_sec)
+        num_control_points = len(control_points)
+        while t <= 1:
+            x = 0
+            y = 0
+            for i, (x1, y1) in enumerate(control_points):
+                binom = math.comb(num_control_points - 1, i)
+                x += binom * (1 - t) ** (num_control_points -
+                                         1 - i) * t ** i * x1
+                y += binom * (1 - t) ** (num_control_points -
+                                         1 - i) * t ** i * y1
+            pyautogui.moveTo(x, y, duration=dt)
+            t += dt
+
     def move_mouse(self, x: int, y: int, duration_sec: float = 0.0) -> None:
         """Move the mouse to the parameter (x, y) location.
 
@@ -163,7 +203,11 @@ class MouseController:
             raise ValueError("requested column {x} is out of bounds")
         if y < 0 or y > self._screen_height:
             raise ValueError("requested row {y} is out of bounds")
-        pyautogui.moveTo(x, y, duration_sec)
+
+        num_control_points = 4
+        control_points = self._generate_random_bezier_curve(num_control_points)
+        control_points.append((x, y))
+        self._move_mouse_along_bezier_curve(control_points, duration_sec)
 
     def click(self, button: str) -> None:
         """Perform a left or right mouse button click.
