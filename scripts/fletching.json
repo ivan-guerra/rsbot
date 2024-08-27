@@ -45,8 +45,8 @@
         [1197, 664]
       ],
       "button": "left",
-      "min_delay_sec": 10,
-      "max_delay_sec": 13
+      "min_delay_sec": 51,
+      "max_delay_sec": 55
     }
   ]
 }
