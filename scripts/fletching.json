@@ -1,31 +1,7 @@
 {
   "events": [
     {
-      "id": "click bank",
-      "click_box": [
-        [925, 308],
-        [1001, 319],
-        [926, 512],
-        [1001, 507]
-      ],
-      "button": "left",
-      "min_delay_sec": 1,
-      "max_delay_sec": 3
-    },
-    {
-      "id": "click preset",
-      "click_box": [
-        [1103, 722],
-        [1128, 722],
-        [1103, 746],
-        [1127, 747]
-      ],
-      "button": "left",
-      "min_delay_sec": 1,
-      "max_delay_sec": 3
-    },
-    {
-      "id": "click log",
+      "id": "click arrow heads",
       "click_box": [
         [1436, 753],
         [1467, 750],
@@ -45,8 +21,8 @@
         [1197, 664]
       ],
       "button": "left",
-      "min_delay_sec": 51,
-      "max_delay_sec": 55
+      "min_delay_sec": 25,
+      "max_delay_sec": 30
     }
   ]
 }
