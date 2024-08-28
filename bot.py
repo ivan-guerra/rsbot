@@ -47,10 +47,9 @@ import json
 import time
 import argparse
 import logging
-import math
 import tkinter as tk
 from dataclasses import dataclass
-import pyautogui
+from pyHM import mouse
 
 
 class ClickBox:
@@ -145,44 +144,27 @@ class MouseController:
     def __init__(self) -> None:
         """Construct the mouse controller."""
         root = tk.Tk()
-        self.SCREEN_WIDTH = root.winfo_screenwidth()
-        self.SCREEN_HEIGHT = root.winfo_screenheight()
+        self._screen_width = root.winfo_screenwidth()
+        self._screen_height = root.winfo_screenheight()
 
-    def move_mouse(self,
-                   start_point: tuple[int],
-                   end_point: tuple[int],
-                   control_points: list[tuple[int]],
-                   duration_sec: float) -> None:
-        """Move the mouse along a Bezier curve defined by the given control points.
+    def move(self, dst_point: tuple[int], speed_multiplier: float) -> None:
+        """Move the mouse to the paramater destination point.
 
-        The cursor will always begin at exactly the location specified by start_point.
-        Likewise, the cursor will always come to a stop at end_point. The 
-        control_points are used as references to control the drawing of the line.
-        There is no guarantee the mouse will pass through the control points.
+        The movement of the mouse is designed to look as human as possible.
 
         Args:
-            control_points: A list of control points for the curve.
-            duration_sec: The duration of the mouse movement in seconds.
+            dst_point: A tuple (x, y) representing the mouse's destination.
+        Throws:
+            ValueError: When the destination point has an out of bounds row or column value.
         """
-        pyautogui.moveTo(start_point[0], start_point[1], duration=duration_sec)
+        x = dst_point[0]
+        y = dst_point[1]
+        if x < 0 or x >= self._screen_width:
+            raise ValueError(f"row {x} is out of bounds")
+        if y < 0 or y >= self._screen_height:
+            raise ValueError(f"column {y} is out of bounds")
 
-        frames_per_sec = 60
-        t = 0
-        dt = 1 / (duration_sec * frames_per_sec)
-        num_control_points = len(control_points)
-        while t <= 1:
-            x = 0
-            y = 0
-            for i, (x1, y1) in enumerate(control_points):
-                binom = math.comb(num_control_points - 1, i)
-                x += binom * (1 - t) ** (num_control_points -
-                                         1 - i) * t ** i * x1
-                y += binom * (1 - t) ** (num_control_points -
-                                         1 - i) * t ** i * y1
-            pyautogui.moveTo(x, y, duration=dt)
-            t += dt
-
-        pyautogui.moveTo(end_point[0], end_point[1], duration=duration_sec)
+        mouse.move(x, y, multiplier=speed_multiplier)
 
     def click(self, button: str) -> None:
         """Perform a left or right mouse button click.
@@ -192,9 +174,12 @@ class MouseController:
         Throws:
             ValueError: When an unsupported button type is detected.
         """
-        if button not in ["left", "right"]:
+        if button == "left":
+            mouse.click()
+        elif button == "right":
+            mouse.right_click()
+        else:
             raise ValueError(f"unexpected button value: {button}")
-        pyautogui.click(button=button)
 
 
 class Script:  # pylint: disable=locally-disabled, too-few-public-methods
@@ -211,22 +196,6 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         self._conf = conf
         self._events = self._parse_events(conf.script)
         self._mouse_ctrl = MouseController()
-        self._mouse_ctrl_points = []
-
-    def _generate_random_bezier_curve(self, num_control_points: int) -> list[tuple[int]]:
-        """Generate a random Bezier curve with the specified number of control points.
-
-        Args:
-            num_control_points: The number of control points for the curve.
-        Returns:
-            A list of control points, each represented as a tuple (x, y).
-        """
-        control_points = []
-        for _ in range(num_control_points):
-            x = random.randint(0, self._mouse_ctrl.SCREEN_WIDTH - 1)
-            y = random.randint(0, self._mouse_ctrl.SCREEN_HEIGHT - 1)
-            control_points.append((x, y))
-        return control_points
 
     def _parse_events(self, script_json: str) -> list[MouseEvent]:
         """Read events from a JSON script file.
@@ -274,29 +243,13 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
 
     def _exec_event(self, event: MouseEvent) -> None:
         """Execute a scripted mouse event."""
-        # Randomizing both the click delay and click point is thought to reduce
-        # the chance of the bot being detected.
-        mouse_delay_sec = random.uniform(*self._conf.mouse_delay)
         logging.info("executing event: %s", event.event_id)
-        logging.debug(
-            "delaying movement to position by %0.4f sec ", mouse_delay_sec)
 
-        # When moving the mouse to the target, move along a "natural" curve.
-        num_control_points = random.randint(*self._conf.mouse_ctrl_points)
-        logging.debug("using %d points to model mouse trajectory",
-                      num_control_points)
-
-        start_point = (random.randint(0, self._mouse_ctrl.SCREEN_WIDTH - 1),
-                       random.randint(0, self._mouse_ctrl.SCREEN_HEIGHT - 1))
-        if self._mouse_ctrl_points:
-            # Start the next curve where the last one left off.
-            start_point = self._mouse_ctrl_points[-1]
+        speed_multiplier = random.uniform(*self._conf.mouse_speed)
+        logging.debug("setting mouse speed multiplier to %0.4fx",
+                      speed_multiplier)
         end_point = event.click_box.get_rand_point()
-
-        self._mouse_ctrl_points = self._generate_random_bezier_curve(
-            num_control_points)
-        self._mouse_ctrl.move_mouse(
-            start_point, end_point, self._mouse_ctrl_points, mouse_delay_sec)
+        self._mouse_ctrl.move(end_point, speed_multiplier)
 
         logging.debug("clicking at position (%d, %d)",
                       end_point[0], end_point[1])
@@ -352,16 +305,10 @@ if __name__ == "__main__":
                             help="script runtime in seconds")
         parser.add_argument("--start-delay", "-s", type=int,
                             help="script start delay in seconds")
-        parser.add_argument('--mouse-delay', "-d", nargs=2,
-                            type=float, default=[0.1, 0.25],
-                            help="defines a range in seconds from which a "
-                            "delay for each mouse movement will be "
-                            "randomly chosen")
-        parser.add_argument('--mouse-ctrl-points', "-c", nargs=2,
-                            type=int, default=[6, 10],
-                            help="defines a range from which the number "
-                            "of points on the mouse movement curve will be "
-                            "randomly chosen before each event")
+        parser.add_argument('--mouse-speed', "-d", nargs=2,
+                            type=float, default=[1, 3],
+                            help="defines a range of mouse speed multipliers, "
+                            "a higher number means a slower movement")
         parser.add_argument("--idle-period", "-p", type=float, default=900,
                             help="number of seconds until an idle wait is "
                             "started")
@@ -393,4 +340,4 @@ if __name__ == "__main__":
             time.sleep(args.start_delay)
         script.run()
     except ValueError as error:
-        logging.fatal("value error, %s", error)
+        logging.fatal("%s", error)
