@@ -164,7 +164,17 @@ class MouseController:
         if y < 0 or y >= self._screen_height:
             raise ValueError(f"column {y} is out of bounds")
 
-        mouse.move(x, y, multiplier=speed_multiplier)
+        # There's a bug in pyHM where the mouse trajectory occassionally contains
+        # successive points causing scipy's interpolate to throw a ValueError.
+        # The code below works around that issue by attempting to move the mouse
+        # repeatedly until it's moved with success.
+        mouse_moved = False
+        while not mouse_moved:
+            try:
+                mouse.move(x, y, multiplier=speed_multiplier)
+                mouse_moved = True
+            except ValueError:
+                pass
 
     def click(self, button: str) -> None:
         """Perform a left or right mouse button click.
@@ -174,12 +184,20 @@ class MouseController:
         Throws:
             ValueError: When an unsupported button type is detected.
         """
-        if button == "left":
-            mouse.click()
-        elif button == "right":
-            mouse.right_click()
-        else:
+        if button not in ["left", "right"]:
             raise ValueError(f"unexpected button value: {button}")
+
+        # See pyHM note in MouseController.move().
+        mouse_clicked = False
+        while not mouse_clicked:
+            try:
+                if button == "left":
+                    mouse.click()
+                elif button == "right":
+                    mouse.right_click()
+                mouse_clicked = True
+            except ValueError:
+                pass
 
 
 class Script:  # pylint: disable=locally-disabled, too-few-public-methods
