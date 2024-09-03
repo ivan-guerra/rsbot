@@ -1,0 +1,40 @@
+{
+  "events": [
+    {
+      "id": "click banker",
+      "click_box": [
+        [1219, 502],
+        [1231, 499],
+        [1214, 535],
+        [1228, 540]
+      ],
+      "button": "left",
+      "min_delay_sec": 1,
+      "max_delay_sec": 3
+    },
+    {
+      "id": "click preset",
+      "click_box": [
+        [1104, 725],
+        [1125, 722],
+        [1104, 744],
+        [1123, 742]
+      ],
+      "button": "left",
+      "min_delay_sec": 1,
+      "max_delay_sec": 3
+    },
+    {
+      "id": "click bonfire",
+      "click_box": [
+        [697, 368],
+        [753, 364],
+        [717, 454],
+        [788, 442]
+      ],
+      "button": "left",
+      "min_delay_sec": 102,
+      "max_delay_sec": 108
+    }
+  ]
+}
