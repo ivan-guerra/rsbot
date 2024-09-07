@@ -47,6 +47,7 @@ import json
 import time
 import argparse
 import logging
+import copy
 import tkinter as tk
 from dataclasses import dataclass
 from pyHM import mouse
@@ -72,7 +73,7 @@ class ClickBox:
         if len(vertices) != num_vertices:
             raise ValueError(
                 f"invalid number of vertices, expected {num_vertices} got {len(vertices)}")
-        self._vertices = vertices
+        self._vertices = copy.deepcopy(vertices)
 
     def _random_point_in_triangle(self, v1, v2, v3) -> tuple[int]:
         """Return a point within the bounds of the triangle formed by the paramater vertices."""
@@ -88,6 +89,10 @@ class ClickBox:
         y = v1[1] + s * (v2[1] - v1[1]) + t * (v3[1] - v1[1])
 
         return (x, y)
+
+    def vertices(self) -> list[tuple[int]]:
+        """Return this click box's vertices."""
+        return self._vertices
 
     def get_rand_point(self) -> tuple[int]:
         """Return a random point within click box bounds."""
