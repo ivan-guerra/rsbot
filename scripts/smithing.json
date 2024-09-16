@@ -1,0 +1,281 @@
+{
+  "events": [
+    {
+      "id": "click bank",
+      "click_box": [
+        [1399, 395],
+        [1486, 381],
+        [1518, 420],
+        [1433, 469]
+      ],
+      "button": "left",
+      "min_delay_sec": 3,
+      "max_delay_sec": 5
+    },
+    {
+      "id": "click preset",
+      "click_box": [
+        [1106, 726],
+        [1121, 743],
+        [1122, 743],
+        [1106, 740]
+      ],
+      "button": "left",
+      "min_delay_sec": 1,
+      "max_delay_sec": 3
+    },
+    {
+      "id": "click forge after bank",
+      "click_box": [
+        [296, 434],
+        [507, 426],
+        [389, 587],
+        [539, 572]
+      ],
+      "button": "left",
+      "min_delay_sec": 3,
+      "max_delay_sec": 5
+    },
+    {
+      "id": "begin project",
+      "click_box": [
+        [1081, 721],
+        [1083, 732],
+        [1314, 718],
+        [1488, 731]
+      ],
+      "button": "left",
+      "min_delay_sec": 1,
+      "max_delay_sec": 3
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    },
+    {
+      "id": "click forge by forge",
+      "click_box": [
+        [902, 345],
+        [1017, 350],
+        [1026, 482],
+        [908, 488]
+      ],
+      "button": "left",
+      "min_delay_sec": 2,
+      "max_delay_sec": 4
+    },
+    {
+      "id": "click anvil",
+      "click_box": [
+        [1095, 504],
+        [1144, 508],
+        [1149, 565],
+        [1103, 569]
+      ],
+      "button": "left",
+      "min_delay_sec": 43,
+      "max_delay_sec": 48
+    }
+  ]
+}
