@@ -1,6 +1,8 @@
 """Define a virtual machine that executes RSbot script."""
 
-from instructions import Context, Delay, MouseClick, MouseMove, MouseMoveClickBox
+from instructions import (Context, Delay, MouseClick,
+                          MouseMove, MouseMoveClickBox, Subtract,
+                          Store, JumpNotEqual)
 
 
 class VirtualMachine:  # pylint: disable=too-few-public-methods
@@ -25,10 +27,17 @@ class VirtualMachine:  # pylint: disable=too-few-public-methods
                 execute(MouseMove, raw_inst, ctxt)
             elif itype == "msmvcb":
                 execute(MouseMoveClickBox, raw_inst, ctxt)
+            elif itype == "sub":
+                execute(Subtract, raw_inst, ctxt)
+            elif itype == "store":
+                execute(Store, raw_inst, ctxt)
+            elif itype == "jne":
+                execute(JumpNotEqual, raw_inst, ctxt)
+            elif itype.endswith(":"):
+                ctxt.pc += 1
+                ctxt.labels[itype.removesuffix(":")] = ctxt.pc
             else:
                 raise ValueError(f"unknown instruction '{itype}'")
-
-            ctxt.pc += 1
 
     def execute(self, script: str) -> None:
         """Execute an RSbot script.
@@ -46,7 +55,3 @@ class VirtualMachine:  # pylint: disable=too-few-public-methods
                 instructions.append(stripped_line)
 
         self._execute_instructions(instructions)
-
-
-vm = VirtualMachine()
-vm.execute("scripts/test.rsbot")

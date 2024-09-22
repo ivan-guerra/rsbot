@@ -93,6 +93,8 @@ class Delay(Instruction):
         min_delay, max_delay = int(self._args[0]), int(self._args[1])
         sleep(randint(min_delay, max_delay))
 
+        self._ctxt.pc += 1
+
 
 class MouseClick(Instruction):
     """Represents an instruction to perform a mouse click."""
@@ -112,6 +114,8 @@ class MouseClick(Instruction):
         elif button == "right":
             mouse.right_click()
 
+        self._ctxt.pc += 1
+
 
 class MouseMove(Instruction):
     """Represents an instruction to move the mouse."""
@@ -125,6 +129,8 @@ class MouseMove(Instruction):
         x, y = int(self._args[0]), int(self._args[1])
         spd_min, spd_max = float(self._args[2]), float(self._args[3])
         mouse.move(x, y, multiplier=uniform(spd_min, spd_max))
+
+        self._ctxt.pc += 1
 
 
 class MouseMoveClickBox(Instruction):
@@ -166,3 +172,62 @@ class MouseMoveClickBox(Instruction):
         pos = self._get_rand_point(clickbox)
         spd_min, spd_max = float(self._args[-2]), float(self._args[-1])
         mouse.move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
+
+        self._ctxt.pc += 1
+
+
+class Subtract(Instruction):
+    """Represents an instruction to subtract an immediate value from a register."""
+
+    def __init__(self, ctxt: Context):
+        """Initialize a Subtract instruction object."""
+        super().__init__("sub", 2, ctxt)
+
+    def execute(self) -> None:
+        """Subtract the immediate value from the specified register."""
+        register = self._args[0]
+        immediate = int(self._args[1])
+
+        if register not in self._ctxt.registers:
+            raise ValueError(
+                f"attempted to access unknown register '{register}'")
+        self._ctxt.registers[register] -= immediate
+        self._ctxt.pc += 1
+
+
+class Store(Instruction):
+    """Represents an instruction to store an immediate value in a register."""
+
+    def __init__(self, ctxt: Context):
+        """Initialize a Store instruction object."""
+        super().__init__("store", 2, ctxt)
+
+    def execute(self) -> None:
+        """Store the immediate value in the specified register."""
+        register = self._args[0]
+        immediate = int(self._args[1])
+
+        if register not in self._ctxt.registers:
+            raise ValueError(
+                f"attempted to access unknown register '{register}'")
+        self._ctxt.registers[register] = immediate
+        self._ctxt.pc += 1
+
+
+class JumpNotEqual(Instruction):
+    """Represents an instruction to jump to a label if the value in register R0 is not zero."""
+
+    def __init__(self, ctxt: Context):
+        """Initialize a JumpNotEqual instruction object."""
+        super().__init__("jne", 1, ctxt)
+
+    def execute(self) -> None:
+        """Jump to the specified label if the value in register R0 is not 0."""
+        label = self._args[0]
+
+        if self._ctxt.registers["R0"] == 0:
+            self._ctxt.pc += 1
+        else:
+            if label not in self._ctxt.labels:
+                raise ValueError(f"unknown label referenced '{label}'")
+            self._ctxt.pc = self._ctxt.labels[label]
