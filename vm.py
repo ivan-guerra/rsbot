@@ -1,6 +1,6 @@
 """Define a virtual machine that executes RSbot script."""
 
-from instructions import Delay, MouseClick, MouseMove, MouseMoveClickBox
+from instructions import Context, Delay, MouseClick, MouseMove, MouseMoveClickBox
 
 
 class VirtualMachine:  # pylint: disable=too-few-public-methods
@@ -8,27 +8,27 @@ class VirtualMachine:  # pylint: disable=too-few-public-methods
 
     def _execute_instructions(self, instructions: list[str]) -> None:
         """Execute the list of instructions until the end is reached or an error occurs."""
-        def execute(inst_type, raw_inst: str):
-            obj = inst_type()
+        def execute(inst_type, raw_inst: str, ctxt: Context):
+            obj = inst_type(ctxt)
             obj.parse(raw_inst)
             obj.execute()
 
-        pc = 0
-        while pc in range(0, len(instructions)):
-            raw_inst = instructions[pc]
+        ctxt = Context(pc=0, registers={"R0": 0}, labels={})
+        while ctxt.pc in range(0, len(instructions)):
+            raw_inst = instructions[ctxt.pc]
             itype = raw_inst.split(" ")[0]
             if itype == "delay":
-                execute(Delay, raw_inst)
+                execute(Delay, raw_inst, ctxt)
             elif itype == "msclk":
-                execute(MouseClick, raw_inst)
+                execute(MouseClick, raw_inst, ctxt)
             elif itype == "msmv":
-                execute(MouseMove, raw_inst)
+                execute(MouseMove, raw_inst, ctxt)
             elif itype == "msmvcb":
-                execute(MouseMoveClickBox, raw_inst)
+                execute(MouseMoveClickBox, raw_inst, ctxt)
             else:
                 raise ValueError(f"unknown instruction '{itype}'")
 
-            pc += 1
+            ctxt.pc += 1
 
     def execute(self, script: str) -> None:
         """Execute an RSbot script.

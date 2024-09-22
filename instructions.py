@@ -8,6 +8,21 @@ from pyHM import mouse
 
 
 @dataclass
+class Context:
+    """A class representing the execution context of the program.
+
+    Attributes:
+        pc        (int): A integer representing the program counter.
+        registers (dict[str, int]): A dictionary mapping register names to their values.
+        labels    (dict[str, int]): A dictionary mapping label names to their addresses.
+    """
+
+    pc: int
+    registers: dict[str, int]
+    labels: dict[str, int]
+
+
+@dataclass
 class Point2D:
     """A class representing a 2D point with x and y coordinates.
 
@@ -27,16 +42,18 @@ class Instruction(ABC):
     number of arguments, and methods to parse and execute the instruction.
     """
 
-    def __init__(self, itype: str, nargs: int):
+    def __init__(self, itype: str, nargs: int, ctxt: Context):
         """Initialize an Instruction object with the given type and number of arguments.
 
         Parameters:
             itype (str): The type of the instruction.
             nargs (int): The number of arguments expected for the instruction.
+            ctxt  (Context): The instruction's execution context.
         """
         self._itype = itype
         self._nargs = nargs
         self._args = []
+        self._ctxt = ctxt
 
     @property
     def itype(self) -> str:
@@ -67,9 +84,9 @@ class Instruction(ABC):
 class Delay(Instruction):
     """Represents an instruction to insert a randomized delay."""
 
-    def __init__(self):
+    def __init__(self, ctxt: Context):
         """Initialize a Delay object with default values."""
-        super().__init__("delay", 2)
+        super().__init__("delay", 2, ctxt)
 
     def execute(self) -> None:
         """Delay by sleeping for a random amount of time between the specified delays."""
@@ -80,9 +97,9 @@ class Delay(Instruction):
 class MouseClick(Instruction):
     """Represents an instruction to perform a mouse click."""
 
-    def __init__(self):
+    def __init__(self, ctxt: Context):
         """Initialize a MouseClick object with default values."""
-        super().__init__("msclk", 1)
+        super().__init__("msclk", 1, ctxt)
 
     def execute(self) -> None:
         """Simulate a mouse click based on the provided button type."""
@@ -99,9 +116,9 @@ class MouseClick(Instruction):
 class MouseMove(Instruction):
     """Represents an instruction to move the mouse."""
 
-    def __init__(self):
+    def __init__(self, ctxt: Context):
         """Initialize a MouseMove instruction object."""
-        super().__init__("msmv", 4)
+        super().__init__("msmv", 4, ctxt)
 
     def execute(self) -> None:
         """Move the mouse to the specified coordinates with a random speed."""
@@ -136,9 +153,9 @@ class MouseMoveClickBox(Instruction):
         # Generate a point in the second triangle.
         return self._random_point_in_triangle(clickbox[0], clickbox[2], clickbox[3])
 
-    def __init__(self):
+    def __init__(self, ctxt: Context):
         """Initialize a MouseMoveClickBox instruction object."""
-        super().__init__("msmvcb", 10)
+        super().__init__("msmvcb", 10, ctxt)
 
     def execute(self) -> None:
         """Move the mouse to a random point within the specified click box with a random speed."""
