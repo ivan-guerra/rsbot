@@ -7,6 +7,34 @@ from dataclasses import dataclass
 from pyHM import mouse
 
 
+def _mouse_move(x: int, y: int, multiplier: float) -> None:
+    # There's a bug in pyHM where the mouse trajectory occassionally contains
+    # successive points causing scipy's interpolate to throw a ValueError.
+    # The code below works around that issue by attempting to move the mouse
+    # repeatedly until it's moved with success.
+    mouse_moved = False
+    while not mouse_moved:
+        try:
+            mouse.move(x, y, multiplier=multiplier)
+            mouse_moved = True
+        except ValueError:
+            pass
+
+
+def _mouse_click(button: str):
+    # See note in _mouse_move().
+    mouse_clicked = False
+    while not mouse_clicked:
+        try:
+            if button == "left":
+                mouse.click()
+            elif button == "right":
+                mouse.right_click()
+            mouse_clicked = True
+        except ValueError:
+            pass
+
+
 @dataclass
 class Context:
     """A class representing the execution context of the program.
@@ -108,11 +136,7 @@ class MouseClick(Instruction):
         button = self._args[0]
         if button not in ["left", "right"]:
             raise ValueError(f"unknown button type '{button}'")
-
-        if button == "left":
-            mouse.click()
-        elif button == "right":
-            mouse.right_click()
+        _mouse_click(button)
 
         self._ctxt.pc += 1
 
@@ -128,7 +152,7 @@ class MouseMove(Instruction):
         """Move the mouse to the specified coordinates with a random speed."""
         x, y = int(self._args[0]), int(self._args[1])
         spd_min, spd_max = float(self._args[2]), float(self._args[3])
-        mouse.move(x, y, multiplier=uniform(spd_min, spd_max))
+        _mouse_move(x, y, multiplier=uniform(spd_min, spd_max))
 
         self._ctxt.pc += 1
 
@@ -171,7 +195,7 @@ class MouseMoveClickBox(Instruction):
 
         pos = self._get_rand_point(clickbox)
         spd_min, spd_max = float(self._args[-2]), float(self._args[-1])
-        mouse.move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
+        _mouse_move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
 
         self._ctxt.pc += 1
 
