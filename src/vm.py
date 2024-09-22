@@ -2,7 +2,8 @@
 
 from instructions import (Context, Delay, MouseClick,
                           MouseMove, MouseMoveClickBox, MouseMoveColor,
-                          Subtract, Store, JumpNotEqual)
+                          MouseMoveText, Subtract, Store,
+                          JumpNotEqual)
 
 
 class VirtualMachine:  # pylint: disable=too-few-public-methods
@@ -29,6 +30,8 @@ class VirtualMachine:  # pylint: disable=too-few-public-methods
                 execute(MouseMoveClickBox, raw_inst, ctxt)
             elif itype == "msmvcolor":
                 execute(MouseMoveColor, raw_inst, ctxt)
+            elif itype == "msmvtext":
+                execute(MouseMoveText, raw_inst, ctxt)
             elif itype == "sub":
                 execute(Subtract, raw_inst, ctxt)
             elif itype == "store":
