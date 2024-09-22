@@ -1,0 +1,9 @@
+# click broad arrow heads
+msmvcb 1436 753 1467 750 1436 771 1468 770 0.1 1.0
+msclk left
+delay 1 3
+
+# click fletch
+msmvcb 944 643 1195 647 943 666 1197 664 0.1 1.0
+msclk left
+delay 25 35
