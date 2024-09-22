@@ -1,8 +1,8 @@
 """Define a virtual machine that executes RSbot script."""
 
 from instructions import (Context, Delay, MouseClick,
-                          MouseMove, MouseMoveClickBox, Subtract,
-                          Store, JumpNotEqual)
+                          MouseMove, MouseMoveClickBox, MouseMoveColor,
+                          Subtract, Store, JumpNotEqual)
 
 
 class VirtualMachine:  # pylint: disable=too-few-public-methods
@@ -27,6 +27,8 @@ class VirtualMachine:  # pylint: disable=too-few-public-methods
                 execute(MouseMove, raw_inst, ctxt)
             elif itype == "msmvcb":
                 execute(MouseMoveClickBox, raw_inst, ctxt)
+            elif itype == "msmvcolor":
+                execute(MouseMoveColor, raw_inst, ctxt)
             elif itype == "sub":
                 execute(Subtract, raw_inst, ctxt)
             elif itype == "store":
