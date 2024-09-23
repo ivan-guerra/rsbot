@@ -7,35 +7,7 @@ from dataclasses import dataclass
 from collections import deque
 from PIL import ImageGrab
 from pynput.keyboard import Controller, Key
-from pyHM import mouse
-
-
-def _mouse_move(x: int, y: int, multiplier: float) -> None:
-    # There's a bug in pyHM where the mouse trajectory occassionally contains
-    # successive points causing scipy's interpolate to throw a ValueError.
-    # The code below works around that issue by attempting to move the mouse
-    # repeatedly until it's moved with success.
-    mouse_moved = False
-    while not mouse_moved:
-        try:
-            mouse.move(x, y, multiplier=multiplier)
-            mouse_moved = True
-        except ValueError:
-            pass
-
-
-def _mouse_click(button: str):
-    # See note in _mouse_move().
-    mouse_clicked = False
-    while not mouse_clicked:
-        try:
-            if button == "left":
-                mouse.click()
-            elif button == "right":
-                mouse.right_click()
-            mouse_clicked = True
-        except ValueError:
-            pass
+from pyautogui import moveTo, click
 
 
 @dataclass
@@ -139,7 +111,7 @@ class MouseClick(Instruction):
         button = self._args[0]
         if button not in ["left", "right"]:
             raise ValueError(f"unknown button type '{button}'")
-        _mouse_click(button)
+        click(button=button)
 
         self._ctxt.pc += 1
 
@@ -149,13 +121,13 @@ class MouseMove(Instruction):
 
     def __init__(self, ctxt: Context):
         """Initialize a MouseMove instruction object."""
-        super().__init__("msmv", 4, ctxt)
+        super().__init__("msmv", 3, ctxt)
 
     def execute(self) -> None:
         """Move the mouse to the specified coordinates with a random speed."""
         x, y = int(self._args[0]), int(self._args[1])
-        spd_min, spd_max = float(self._args[2]), float(self._args[3])
-        _mouse_move(x, y, multiplier=uniform(spd_min, spd_max))
+        duration = float(self._args[2])
+        moveTo(x, y, duration=duration)
 
         self._ctxt.pc += 1
 
@@ -188,17 +160,17 @@ class MouseMoveClickBox(Instruction):
 
     def __init__(self, ctxt: Context):
         """Initialize a MouseMoveClickBox instruction object."""
-        super().__init__("msmvcb", 10, ctxt)
+        super().__init__("msmvcb", 9, ctxt)
 
     def execute(self) -> None:
         """Move the mouse to a random point within the specified click box with a random speed."""
         clickbox = []
-        for i in range(0, len(self._args) - 2, 2):
+        for i in range(0, len(self._args) - 1, 2):
             clickbox.append(Point2D(int(self._args[i]), int(self._args[i+1])))
 
         pos = self._get_rand_point(clickbox)
-        spd_min, spd_max = float(self._args[-2]), float(self._args[-1])
-        _mouse_move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
+        duration = float(self._args[-1])
+        moveTo(pos.x, pos.y, duration=duration)
 
         self._ctxt.pc += 1
 
@@ -314,7 +286,7 @@ class MouseMoveColor(Instruction):
 
     def __init__(self, ctxt: Context):
         """Initialize a MouseMoveColor instruction object."""
-        super().__init__("msmvcolor", 7, ctxt)
+        super().__init__("msmvcolor", 6, ctxt)
 
     def execute(self) -> None:
         """Find the largest color cluster with the specified RGB values.
@@ -331,8 +303,8 @@ class MouseMoveColor(Instruction):
                 f"unable to find color cluster with color={rgb}, "
                 f"search params are tolerance={tolerance} and min_cluster_size={min_cluster_size}")
 
-        spd_min, spd_max = float(self._args[-2]), float(self._args[-1])
-        _mouse_move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
+        duration = float(self._args[5])
+        moveTo(pos.x, pos.y, duration=duration)
 
         self._ctxt.pc += 1
 

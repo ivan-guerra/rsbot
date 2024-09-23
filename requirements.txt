@@ -2,4 +2,3 @@ pillow
 PyAutoGUI
 PySide6
 pynput
-pyHM
