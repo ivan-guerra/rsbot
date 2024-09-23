@@ -1,11 +1,12 @@
 """Define the set of instructions supported by the rsbot virtual machine."""
 
 from time import sleep
-from random import randint, uniform, random
+from random import uniform, random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from collections import deque
 from PIL import ImageGrab
+from pynput.keyboard import Controller, Key
 from pyHM import mouse
 
 
@@ -120,8 +121,8 @@ class Delay(Instruction):
 
     def execute(self) -> None:
         """Delay by sleeping for a random amount of time between the specified delays."""
-        min_delay, max_delay = int(self._args[0]), int(self._args[1])
-        sleep(randint(min_delay, max_delay))
+        min_delay, max_delay = float(self._args[0]), float(self._args[1])
+        sleep(uniform(min_delay, max_delay))
 
         self._ctxt.pc += 1
 
@@ -332,6 +333,33 @@ class MouseMoveColor(Instruction):
 
         spd_min, spd_max = float(self._args[-2]), float(self._args[-1])
         _mouse_move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
+
+        self._ctxt.pc += 1
+
+
+class PressKey(Instruction):
+    """Represents an instruction to simulate pressing a key for a specified duration."""
+
+    def __init__(self, ctxt: Context):
+        """Initialize a PressKey instruction object with the given execution context."""
+        super().__init__("pkey", 2, ctxt)
+
+    def execute(self) -> None:
+        """Simulate pressing a key for a specified duration.
+
+        Raises:
+            ValueError: If the specified key is not supported.
+        """
+        key = self._args[0]
+        # Space is the only "special" key supported.
+        if key == "space":
+            key = Key.space
+        delay = float(self._args[1])
+
+        keyboard = Controller()
+        keyboard.press(key)
+        sleep(delay)
+        keyboard.release(key)
 
         self._ctxt.pc += 1
 
