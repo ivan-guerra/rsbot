@@ -7,9 +7,6 @@ from dataclasses import dataclass
 from collections import deque
 from PIL import ImageGrab
 from pyHM import mouse
-import cv2
-import pytesseract
-import numpy as np
 
 
 def _mouse_move(x: int, y: int, multiplier: float) -> None:
@@ -334,73 +331,6 @@ class MouseMoveColor(Instruction):
                 f"search params are tolerance={tolerance} and min_cluster_size={min_cluster_size}")
 
         spd_min, spd_max = float(self._args[-2]), float(self._args[-1])
-        _mouse_move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
-
-        self._ctxt.pc += 1
-
-
-class MouseMoveText(Instruction):
-    """Represents an instruction to move the mouse to the center of a text block on the screen.
-
-    This instruction searches for the specified text on the screen using OCR
-    (Optical Character Recognition) and moves the mouse to the center of the
-    identified text block.
-
-    Attributes:
-        target_text (str): The text to search for on the screen.
-    """
-
-    def _find_text_pos(self, target_text: str) -> Point2D:
-        """Find the position of the specified text block on the screen.
-
-        Args:
-            target_text (str): The text to search for on the screen.
-
-        Returns:
-            Point2D: The center coordinates of the identified text block, or None if not found.
-        """
-        # Capture a screenshot of the entire screen.
-        screenshot = ImageGrab.grab()
-
-        # Convert the screenshot to a format suitable for OpenCV.
-        screenshot_cv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-
-        # Perform OCR on the screenshot.
-        data = pytesseract.image_to_data(
-            screenshot_cv, output_type=pytesseract.Output.DICT)
-
-        # Return the first matching block of text.
-        for i, text in enumerate(data['text']):
-            if text.strip().lower() == target_text.lower():
-                # Get the coordinates of the text on the screen.
-                x = data['left'][i]
-                y = data['top'][i]
-                w = data['width'][i]
-                h = data['height'][i]
-
-                # Calculate the center of the text box.
-                center_x = x + w // 2
-                center_y = y + h // 2
-
-                return Point2D(center_x, center_y)
-
-        return None
-
-    def __init__(self, ctxt: Context):
-        """Initialize a MouseMoveText instruction object."""
-        super().__init__("msmvtext", 3, ctxt)
-
-    def execute(self) -> None:
-        """Move the mouse to the center of the target text.
-
-        Raises:
-            ValueError: If the target text cannot be found on screen.
-        """
-        text = self._args[0]
-        pos = self._find_text_pos(text)
-        if not pos:
-            raise ValueError(f"unable to find text '{text}' on screen")
-        spd_min, spd_max = float(self._args[1]), float(self._args[2])
         _mouse_move(pos.x, pos.y, multiplier=uniform(spd_min, spd_max))
 
         self._ctxt.pc += 1
