@@ -1,0 +1,49 @@
+store R0 2
+
+LOOP:
+  # Build the Flotsam Prawnbroker.
+  msmvcb 893 603 1006 599 900 731 1018 721 0.1 1.0
+  delay 0.45 0.5
+  msclk left
+  delay 0.45 0.5
+  pkey 2 0.1
+
+  # Remove the Flotsam Prawnbroker.
+  msmvcb 945 617 955 617 945 627 955 627 0.1 1.0
+  msclk right
+  delay 0.45 0.5
+  msmvcb 904 688 909 688 904 693 909 693 0.1 1.0
+  delay 0.45 0.5
+  msclk left
+
+  sub R0 1 
+
+  jne LOOP
+
+# Tell Demon Butler to fetch.
+msmvcolor 36 9 7 10 5 0.1 1.0
+delay 1 2
+msclk left
+delay 1 2
+pkey space 0.5
+delay 0.45 0.5 
+pkey 1 0.1
+delay 0.45 0.5 
+pkey 2 0.1
+delay 0.45 0.5 
+pkey 1 0.1
+delay 0.45 0.5 
+
+# Build the 3rd Flotsam Prawnbroker while butler is away.
+msmvcb 893 603 1006 599 900 731 1018 721 0.1 1.0
+delay 0.45 0.5
+msclk left
+delay 0.45 0.5
+pkey 2 0.1
+# Remove the Flotsam Prawnbroker.
+msmvcb 945 617 955 617 945 627 955 627 0.1 1.0
+msclk right
+delay 0.45 0.5
+msmvcb 904 688 909 688 904 693 909 693 0.1 1.0
+delay 0.45 0.5
+msclk left
