@@ -1,49 +1,60 @@
+# This script allows one to train construction using flotsam pawnbrokers and a
+# demon butler.
+
+# Setup to loop twice.
 store R0 2
 
 LOOP:
-  # Build the Flotsam Prawnbroker.
-  msmvcb 893 603 1006 599 900 731 1018 721 0.5
-  delay 0.45 0.5
+  # Build the flotsam prawnbroker.
+  msmvcb 655 472 675 472 655 492 675 492 0.25
+  delay 0.75 0.85
   msclk left
-  delay 0.45 0.5
-  pkey 2 0.1
+  delay 0.65 0.75
+  pkey 2 0.2
 
-  # Remove the Flotsam Prawnbroker.
-  msmvcb 945 617 955 617 945 627 955 627 0.5
+  # Remove the flotsam prawnbroker.
+  msmvcb 680 480 680 480 680 480 680 480 0.25
+  delay 1.0 1.25
   msclk right
-  delay 0.45 0.5
-  msmvcb 904 688 909 688 904 693 909 693 0.5
-  delay 0.45 0.5
+  delay 1.25 1.35
+  msmvcb 686 553 686 553 686 553 686 553 0.25
+  delay 0.5 0.65
   msclk left
+  delay 0.75 0.85 
 
+  # Decrement the loop counter.
   sub R0 1 
 
+  # Jump back to the top of the loop if the counter has not reached 0.
   jne LOOP
 
-# Tell Demon Butler to fetch.
-msmvcolor 36 9 7 10 5 0.5
-delay 1 2
+# Tell demon butler to fetch.
+msmvcolor 47 14 11 10 5 0.25
+delay 0.75 1.0
 msclk left
-delay 1 2
-pkey space 0.5
-delay 0.45 0.5 
-pkey 1 0.1
-delay 0.45 0.5 
-pkey 2 0.1
-delay 0.45 0.5 
-pkey 1 0.1
-delay 0.45 0.5 
+delay 0.75 1.0
+pkey space 0.3
+delay 0.75 0.85
+pkey 1 0.3
+delay 0.75 0.85
+pkey 2 0.3
+delay 0.75 0.85
+pkey 1 0.3
+delay 0.75 0.85
 
-# Build the 3rd Flotsam Prawnbroker while butler is away.
-msmvcb 893 603 1006 599 900 731 1018 721 0.5
-delay 0.45 0.5
+# Build the 3rd flotsam prawnbroker while butler is away.
+msmvcb 655 472 675 472 655 492 675 492 0.25
+delay 0.75 0.85
 msclk left
-delay 0.45 0.5
-pkey 2 0.1
-# Remove the Flotsam Prawnbroker.
-msmvcb 945 617 955 617 945 627 955 627 0.5
+delay 0.65 0.75
+pkey 2 0.3
+
+# Remove the flotsam prawnbroker.
+msmvcb 680 480 680 480 680 480 680 480 0.25
+delay 1.0 1.25
 msclk right
-delay 0.45 0.5
-msmvcb 904 688 909 688 904 693 909 693 0.5
-delay 0.45 0.5
+delay 1.0 1.15
+msmvcb 686 553 686 553 686 553 686 553 0.25
+delay 0.5 0.65
 msclk left
+delay 0.75 0.85 

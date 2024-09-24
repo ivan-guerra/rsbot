@@ -1,9 +1,16 @@
-# click broad arrow heads
-msmvcb 1436 753 1467 750 1436 771 1468 770 0.1 1.0
+# This script allows one to fletch arrows, bows, etc.
+
+# Click resource (e.g., arrow heads).
+msmvcb 1436 753 1467 750 1436 771 1468 770 0.5
+delay 1 3
 msclk left
 delay 1 3
 
-# click fletch
+# Click fletch button in the pop-up window.
 msmvcb 944 643 1195 647 943 666 1197 664 0.1 1.0
+delay 1 3
 msclk left
+# The delay below allows you to fletch 300 broad arrows.
+# You may want to adjust the delay if you're, for example, fletching magic
+# longbows.
 delay 25 35
