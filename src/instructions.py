@@ -107,7 +107,11 @@ class MouseClick(Instruction):
         super().__init__("msclk", 1, ctxt)
 
     def execute(self) -> None:
-        """Simulate a mouse click based on the provided button type."""
+        """Simulate a mouse click based on the provided button type.
+
+        Raises:
+            ValueError: If the button argument is not one of "left" or "right".
+        """
         button = self._args[0]
         if button not in ["left", "right"]:
             raise ValueError(f"unknown button type '{button}'")
@@ -124,7 +128,7 @@ class MouseMove(Instruction):
         super().__init__("msmv", 3, ctxt)
 
     def execute(self) -> None:
-        """Move the mouse to the specified coordinates with a random speed."""
+        """Move the mouse to the specified coordinates over duration seconds."""
         x, y = int(self._args[0]), int(self._args[1])
         duration = float(self._args[2])
         moveTo(x, y, duration=duration)
@@ -163,7 +167,7 @@ class MouseMoveClickBox(Instruction):
         super().__init__("msmvcb", 9, ctxt)
 
     def execute(self) -> None:
-        """Move the mouse to a random point within the specified click box with a random speed."""
+        """Move the mouse to a random point within the clickbox over the specified duration."""
         clickbox = []
         for i in range(0, len(self._args) - 1, 2):
             clickbox.append(Point2D(int(self._args[i]), int(self._args[i+1])))
@@ -187,7 +191,7 @@ class MouseMoveColor(Instruction):
                     target_rgb,
                     tolerance,
                     visited) -> list[tuple[int]]:
-        """Perform flood fill algorithm starting from the specified coordinates (start_x, start_y) on the image 'img'.
+        """Perform flood fill algorithm starting from the specified coordinates on the parameter image.
 
         The algorithm fills the area of connected pixels that match the target color within the given tolerance.
 
@@ -204,7 +208,7 @@ class MouseMoveColor(Instruction):
         Returns:
             A list of coordinates (tuples) representing the filled area.
         """
-        # Stack for pixels to visit (breadth-first search).
+        # Queue of pixels to visit (breadth-first search).
         queue = deque([(start_x, start_y)])
         cluster_coords = []
 
@@ -239,7 +243,7 @@ class MouseMoveColor(Instruction):
         """Find the largest cluster of pixels in a screenshot that match the target color within a given tolerance.
 
         Args:
-            target_rgb (Tuple[int, int, int]): The RGB values of the target color to search for.
+            target_rgb (tuple[int, int, int]): The RGB values of the target color to search for.
             tolerance (int): The maximum difference allowed in RGB values to consider a pixel a match (default is 10).
             min_cluster_size (int): The minimum size of a cluster to be considered the largest (default is 4).
 
@@ -310,14 +314,14 @@ class MouseMoveColor(Instruction):
 
 
 class PressKey(Instruction):
-    """Represents an instruction to simulate pressing a key for a specified duration."""
+    """Represents an instruction to simulate pressing and releasing a key."""
 
     def __init__(self, ctxt: Context):
         """Initialize a PressKey instruction object with the given execution context."""
         super().__init__("pkey", 2, ctxt)
 
     def execute(self) -> None:
-        """Simulate pressing a key for a specified duration.
+        """Simulate pressing and releasing a key.
 
         Raises:
             ValueError: If the specified key is not supported.
@@ -344,7 +348,11 @@ class Subtract(Instruction):
         super().__init__("sub", 2, ctxt)
 
     def execute(self) -> None:
-        """Subtract the immediate value from the specified register."""
+        """Subtract the immediate value from the specified register.
+
+        Raises:
+            ValueError: If the referenced register does not exist.
+        """
         register = self._args[0]
         immediate = int(self._args[1])
 
@@ -363,7 +371,11 @@ class Store(Instruction):
         super().__init__("store", 2, ctxt)
 
     def execute(self) -> None:
-        """Store the immediate value in the specified register."""
+        """Store the immediate value in the specified register.
+
+        Raises:
+            ValueError: If the referenced register does not exist.
+        """
         register = self._args[0]
         immediate = int(self._args[1])
 
@@ -382,7 +394,11 @@ class JumpNotEqual(Instruction):
         super().__init__("jne", 1, ctxt)
 
     def execute(self) -> None:
-        """Jump to the specified label if the value in register R0 is not 0."""
+        """Jump to the specified label if the value in register R0 is not 0.
+
+        Raises:
+            ValueError: If the referenced label does not exist.
+        """
         label = self._args[0]
 
         if self._ctxt.registers["R0"] == 0:
