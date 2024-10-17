@@ -23,19 +23,20 @@ points = []
 
 
 def on_press(key):
-    """Detect ESC and ';' keypresses.
+    """Detect ';' keypresses.
 
-    If the user presses ESC, the function returns False causing the keyboard
-    listener to exit. If the user presses ';', the function records the current
-    mouse location in the global list of locations, points. All other keys are
-    silently ignored.
+    If the user presses ';', the function records the current mouse location in
+    the global list of locations, points. Four ';' presses terminate the
+    listener.
     """
     try:
-        if key == keyboard.Key.esc:
-            return False
         if key.char == ";":
             mouse_ctrl = mouse.Controller()
             points.append(mouse_ctrl.position)
+
+            target_num_points = 4
+            if len(points) == target_num_points:
+                return False
         return True
     except AttributeError:
         # This is in case the key has no `char` attribute (like special keys).
@@ -81,7 +82,7 @@ if __name__ == "__main__":
             event.button = input("button ('left' or 'right'): ")
             event.min_delay_sec = int(input("min delay (sec): "))
             event.max_delay_sec = int(input("max delay (sec): "))
-            print("press ';' at each click box location, when done press 'ESC'")
+            print("press ';' at each of the four click box locations")
             with keyboard.Listener(on_press=on_press) as listener:
                 listener.join()
 
