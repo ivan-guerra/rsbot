@@ -1,16 +1,1 @@
-evdev
-MouseInfo
-numpy
-PyAutoGUI
-PyGetWindow
-pyHM
-PyMsgBox
-pynput
-pyperclip
-PyRect
-PyScreeze
-python-xlib
-python3-xlib
-pytweening
-scipy
-six
+PyAutoGUI>=0.9.54

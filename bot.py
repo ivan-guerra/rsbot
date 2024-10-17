@@ -27,7 +27,6 @@ The bot script must have the following format:
 
 The JSON bot script contains a top-level "events" array. Each click event has five fields:
     * id: A string describing the event.
-    * click_box: An array of 2D points that form a click box. When this event executes, a click
                  will be performed within the click box's bounds.
     * button: Which mouse button to click. Only "left" and "right" buttons are currently supported.
     * min_delay_sec: The minimum delay in seconds the script will insert after the click
@@ -48,9 +47,9 @@ import time
 import argparse
 import logging
 import copy
-import tkinter as tk
 from dataclasses import dataclass
-from pyHM import mouse
+import pyautogui
+import mouse
 
 
 class ClickBox:
@@ -148,17 +147,20 @@ class MouseController:
 
     def __init__(self) -> None:
         """Construct the mouse controller."""
-        root = tk.Tk()
-        self._screen_width = root.winfo_screenwidth()
-        self._screen_height = root.winfo_screenheight()
+        self._screen_width, self._screen_height = pyautogui.size()
 
-    def move(self, dst_point: tuple[int], speed_multiplier: float) -> None:
+    def move(self, dst_point: tuple[int], deviation: int, speed: int) -> None:
         """Move the mouse to the paramater destination point.
 
         The movement of the mouse is designed to look as human as possible.
 
         Args:
             dst_point: A tuple (x, y) representing the mouse's destination.
+            deviation: Percent deviation of the mouse from the linear path
+                       between its current position and dst_point.
+            speed: Speed at which the mouse will traverse the path. Lower
+                   values mean faster movements. 1 is the lowest value supported.
+
         Throws:
             ValueError: When the destination point has an out of bounds row or column value.
         """
@@ -168,18 +170,11 @@ class MouseController:
             raise ValueError(f"row {x} is out of bounds")
         if y < 0 or y >= self._screen_height:
             raise ValueError(f"column {y} is out of bounds")
+        if speed < 1:
+            raise ValueError(f"invalid speed {speed}, speed must be >= 1")
 
-        # There's a bug in pyHM where the mouse trajectory occassionally contains
-        # successive points causing scipy's interpolate to throw a ValueError.
-        # The code below works around that issue by attempting to move the mouse
-        # repeatedly until it's moved with success.
-        mouse_moved = False
-        while not mouse_moved:
-            try:
-                mouse.move(x, y, multiplier=speed_multiplier)
-                mouse_moved = True
-            except ValueError:
-                pass
+        mouse.move(pyautogui.position(), dst_point,
+                   deviation, speed)
 
     def click(self, button: str) -> None:
         """Perform a left or right mouse button click.
@@ -192,17 +187,7 @@ class MouseController:
         if button not in ["left", "right"]:
             raise ValueError(f"unexpected button value: {button}")
 
-        # See pyHM note in MouseController.move().
-        mouse_clicked = False
-        while not mouse_clicked:
-            try:
-                if button == "left":
-                    mouse.click()
-                elif button == "right":
-                    mouse.right_click()
-                mouse_clicked = True
-            except ValueError:
-                pass
+        pyautogui.click(button=button)
 
 
 class Script:  # pylint: disable=locally-disabled, too-few-public-methods
@@ -268,11 +253,11 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
         """Execute a scripted mouse event."""
         logging.info("executing event: %s", event.event_id)
 
-        speed_multiplier = random.uniform(*self._conf.mouse_speed)
-        logging.debug("setting mouse speed multiplier to %0.4fx",
-                      speed_multiplier)
+        speed = random.randint(*self._conf.mouse_speed)
+        logging.debug("setting mouse speed to %d", speed)
         end_point = event.click_box.get_rand_point()
-        self._mouse_ctrl.move(end_point, speed_multiplier)
+        self._mouse_ctrl.move(
+            end_point, self._conf.mouse_deviation, speed)
 
         logging.debug("clicking at position (%d, %d)",
                       end_point[0], end_point[1])
@@ -326,12 +311,15 @@ if __name__ == "__main__":
                             "commands")
         parser.add_argument("--runtime", "-r", type=int, default=3600,
                             help="script runtime in seconds")
-        parser.add_argument("--start-delay", "-s", type=int,
+        parser.add_argument("--start-delay", "-w", type=int,
                             help="script start delay in seconds")
-        parser.add_argument('--mouse-speed', "-d", nargs=2,
-                            type=float, default=[1, 3],
-                            help="defines a range of mouse speed multipliers, "
-                            "a higher number means a slower movement")
+        parser.add_argument("--mouse-deviation", "-d", type=int, default=30,
+                            help="determines the deviation of the mouse during pathing, "
+                            "valid values are in the range [0, 100]")
+        parser.add_argument('--mouse-speed', "-s", nargs=2,
+                            type=int, default=[1, 3],
+                            help="defines the speed of the mouse, "
+                            "lower means faster with 1 being the lowest value")
         parser.add_argument("--idle-period", "-p", type=float, default=900,
                             help="number of seconds until an idle wait is "
                             "started")
