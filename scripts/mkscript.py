@@ -5,18 +5,18 @@ This script allows the user to enter one or more rsbot click events and outputs
 them to a JSON file. The script has one required argument which is the file to
 which click events will be written. The user inputs click event information
 through the console with the exception of the click box points. After prompting
-the user to input click box points, the script will listen for ';' keypresses.
-Each ';' keypress will cause the script to record the location of the mouse.
-After recording four locations, the user should press ESC to save the click
-event. The script can be terminated at any time by pressing CTRL+C or sending
-SIGINT directly to the process. Upon termination, the all click events if any
-will be written to the output file.
+the user to input click box points, the script will listen for four ';'
+keypresses. Each ';' keypress causes the script to record the location of the
+mouse (i.e., one of the four points forming the click box region). The script
+can be terminated at any time by pressing CTRL+C or sending SIGINT directly to
+the process. Upon termination, the all click events if any will be written to
+the output file.
 """
 
 import argparse
 import json
 from pynput import keyboard, mouse
-from bot import MouseEvent, ClickBox
+from rsbot import bot
 
 # Global used to store mouse positions (see on_press()).
 points = []
@@ -42,7 +42,7 @@ def on_press(key):
         return True
 
 
-def save_events(outfile: str, click_events: list[MouseEvent]) -> None:
+def save_events(outfile: str, click_events: list[bot.MouseEvent]) -> None:
     """Save click events in JSON format."""
     with open(outfile, mode="w", encoding="ascii") as json_file:
         event_dicts = []
@@ -72,11 +72,11 @@ if __name__ == "__main__":
         print("press CTRL+c to exit")
         events = []
         while True:
-            event = MouseEvent(event_id="",
-                               click_box=None,
-                               button="left",
-                               min_delay_sec=0,
-                               max_delay_sec=0)
+            event = bot.MouseEvent(event_id="",
+                                   click_box=None,
+                                   button="left",
+                                   min_delay_sec=0,
+                                   max_delay_sec=0)
             event.event_id = input("id: ")
             event.button = input("button ('left' or 'right'): ")
             event.min_delay_sec = int(input("min delay (sec): "))
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             with keyboard.Listener(on_press=on_press) as listener:
                 listener.join()
 
-            event.click_box = ClickBox(points)
+            event.click_box = bot.ClickBox(points)
             events.append(event)
             print(f"saved event: {event}")
             points.clear()

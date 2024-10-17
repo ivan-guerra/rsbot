@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run a Runescape botting script.
 
 This script executes a Runescape 3 or Old School Runescape auto clicker script. A number of
@@ -49,7 +48,7 @@ import logging
 import copy
 from dataclasses import dataclass
 import pyautogui
-import mouse
+from rsbot import mouse
 
 
 class ClickBox:
@@ -299,7 +298,8 @@ class Script:  # pylint: disable=locally-disabled, too-few-public-methods
             curr_time = time.time()
 
 
-if __name__ == "__main__":
+def main():
+    """Parse command line arguments and run the RS bot script."""
     try:
         signal.signal(signal.SIGINT, lambda sig, frame: sys.exit(sig))
 
@@ -352,3 +352,7 @@ if __name__ == "__main__":
         script.run()
     except ValueError as error:
         logging.fatal("%s", error)
+
+
+if __name__ == "__main__":
+    main()
