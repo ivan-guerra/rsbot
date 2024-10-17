@@ -81,8 +81,12 @@ def __mouse_bez(init_pos: tuple[int, int],
 
     ts = [t / (speed * 100.0) for t in range(speed * 101)]
     bezier = __make_bezier(xys)
+    mouse_points = bezier(ts)
+    # Appending fin_pos guarantees we land at the target location regardless of
+    # the deviation setting.
+    mouse_points.append(fin_pos)
 
-    return bezier(ts)
+    return mouse_points
 
 
 def move(init_pos: tuple[int, int], fin_pos: tuple[int, int], deviation: int, speed: int) -> None:
