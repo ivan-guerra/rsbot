@@ -80,8 +80,8 @@ if __name__ == "__main__":
                                    max_delay_sec=0)
             event.event_id = input("id: ")
             event.button = input("button ('left' or 'right'): ")
-            event.min_delay_sec = int(input("min delay (sec): "))
-            event.max_delay_sec = int(input("max delay (sec): "))
+            event.min_delay_sec = float(input("min delay (sec): "))
+            event.max_delay_sec = float(input("max delay (sec): "))
             print("press ';' at each of the four click box locations")
             with keyboard.Listener(on_press=on_press) as listener:
                 listener.join()
