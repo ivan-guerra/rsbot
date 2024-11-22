@@ -1,0 +1,88 @@
+{
+  "events": [
+    {
+      "id": "leather",
+      "click_box": [
+        [444, 219],
+        [464, 224],
+        [446, 240],
+        [466, 240]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "close bank",
+      "click_box": [
+        [560, 48],
+        [569, 48],
+        [560, 55],
+        [569, 55]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "needle",
+      "click_box": [
+        [733, 744],
+        [746, 742],
+        [735, 759],
+        [744, 759]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "leather (i)",
+      "click_box": [
+        [732, 786],
+        [750, 783],
+        [732, 797],
+        [749, 801]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "make",
+      "click_box": [
+        [105, 929],
+        [172, 929],
+        [116, 958],
+        [163, 957]
+      ],
+      "button": "left",
+      "min_delay_sec": 14.8,
+      "max_delay_sec": 15.5
+    },
+    {
+      "id": "bank",
+      "click_box": [
+        [416, 418],
+        [526, 428],
+        [406, 633],
+        [525, 632]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "dhide body",
+      "click_box": [
+        [735, 786],
+        [750, 787],
+        [737, 799],
+        [748, 799]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    }
+  ]
+}

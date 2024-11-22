@@ -1,0 +1,172 @@
+{
+  "events": [
+    {
+      "id": "deposit all",
+      "click_box": [
+        [512, 800],
+        [529, 800],
+        [515, 816],
+        [529, 814]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "tele tabs",
+      "click_box": [
+        [253, 227],
+        [275, 225],
+        [255, 239],
+        [269, 240]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "cape",
+      "click_box": [
+        [305, 226],
+        [316, 223],
+        [306, 237],
+        [315, 238]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "tinder",
+      "click_box": [
+        [350, 225],
+        [364, 228],
+        [348, 242],
+        [369, 239]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "bones",
+      "click_box": [
+        [397, 223],
+        [414, 227],
+        [400, 232],
+        [413, 235]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "marrentill",
+      "click_box": [
+        [449, 223],
+        [463, 223],
+        [445, 237],
+        [461, 240]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "close bank",
+      "click_box": [
+        [559, 46],
+        [570, 46],
+        [561, 53],
+        [568, 53]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.5,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "house tele",
+      "click_box": [
+        [733, 745],
+        [749, 745],
+        [734, 763],
+        [754, 764]
+      ],
+      "button": "left",
+      "min_delay_sec": 5.5,
+      "max_delay_sec": 5.75
+    },
+    {
+      "id": "light incense 1",
+      "click_box": [
+        [176, 485],
+        [181, 486],
+        [177, 490],
+        [181, 491]
+      ],
+      "button": "left",
+      "min_delay_sec": 4.0,
+      "max_delay_sec": 4.25
+    },
+    {
+      "id": "light incense 2",
+      "click_box": [
+        [422, 678],
+        [430, 679],
+        [421, 686],
+        [429, 686]
+      ],
+      "button": "left",
+      "min_delay_sec": 1.75,
+      "max_delay_sec": 2.0
+    },
+    {
+      "id": "bones",
+      "click_box": [
+        [862, 746],
+        [874, 747],
+        [861, 758],
+        [874, 760]
+      ],
+      "button": "left",
+      "min_delay_sec": 1.0,
+      "max_delay_sec": 1.1
+    },
+    {
+      "id": "altar",
+      "click_box": [
+        [457, 449],
+        [469, 446],
+        [456, 478],
+        [465, 478]
+      ],
+      "button": "left",
+      "min_delay_sec": 55.0,
+      "max_delay_sec": 55.5
+    },
+    {
+      "id": "craft tele",
+      "click_box": [
+        [777, 745],
+        [790, 745],
+        [776, 767],
+        [792, 762]
+      ],
+      "button": "left",
+      "min_delay_sec": 3.5,
+      "max_delay_sec": 3.75
+    },
+    {
+      "id": "bank",
+      "click_box": [
+        [637, 713],
+        [656, 715],
+        [644, 731],
+        [655, 731]
+      ],
+      "button": "left",
+      "min_delay_sec": 3.0,
+      "max_delay_sec": 3.25
+    }
+  ]
+}

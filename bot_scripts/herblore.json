@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "id": "berries",
+      "click_box": [
+        [161, 228],
+        [179, 227],
+        [163, 240],
+        [173, 238]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "potion",
+      "click_box": [
+        [202, 223],
+        [218, 223],
+        [203, 237],
+        [224, 241]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "exit bank",
+      "click_box": [
+        [561, 46],
+        [569, 46],
+        [560, 53],
+        [567, 53]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "berries (i)",
+      "click_box": [
+        [738, 751],
+        [750, 751],
+        [733, 765],
+        [748, 761]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "potion (i)",
+      "click_box": [
+        [823, 858],
+        [831, 858],
+        [818, 871],
+        [832, 872]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.6,
+      "max_delay_sec": 0.75
+    },
+    {
+      "id": "make",
+      "click_box": [
+        [222, 932],
+        [299, 934],
+        [235, 972],
+        [297, 970]
+      ],
+      "button": "left",
+      "min_delay_sec": 17.0,
+      "max_delay_sec": 17.5
+    },
+    {
+      "id": "bank chest",
+      "click_box": [
+        [393, 414],
+        [528, 413],
+        [401, 636],
+        [544, 637]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    },
+    {
+      "id": "deposit",
+      "click_box": [
+        [509, 796],
+        [528, 798],
+        [514, 814],
+        [529, 814]
+      ],
+      "button": "left",
+      "min_delay_sec": 0.3,
+      "max_delay_sec": 0.5
+    }
+  ]
+}
