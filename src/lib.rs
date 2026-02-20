@@ -51,16 +51,16 @@ fn mouse_bez(init_pos: Point, fin_pos: Point) -> CubicBez {
     let ctrl1_angle = angle + random_range(-0.8..0.8);
     let ctrl2_angle = angle + random_range(-0.5..0.5);
 
-    let control_1 = Point::new(
+    let ctrl1 = Point::new(
         init_pos.x + ctrl1_offset * ctrl1_angle.cos(),
         init_pos.y + ctrl1_offset * ctrl1_angle.sin(),
     );
-    let control_2 = Point::new(
+    let ctrl2 = Point::new(
         fin_pos.x - ctrl2_offset * ctrl2_angle.cos(),
         fin_pos.y - ctrl2_offset * ctrl2_angle.sin(),
     );
 
-    CubicBez::new(init_pos, control_1, control_2, fin_pos)
+    CubicBez::new(init_pos, ctrl1, ctrl2, fin_pos)
 }
 
 fn move_mouse(enigo: &mut Enigo, target: Point) -> Result<()> {
