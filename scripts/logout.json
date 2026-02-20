@@ -1,0 +1,14 @@
+[
+  {
+    "type": "mouse",
+    "id": "gear button",
+    "pos": [939, 1034],
+    "delay_rng": [3000, 4000]
+  },
+  {
+    "type": "mouse",
+    "id": "logout button",
+    "pos": [608, 622],
+    "delay_rng": [3000, 4000]
+  }
+]

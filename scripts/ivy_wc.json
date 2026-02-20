@@ -1,0 +1,8 @@
+[
+  {
+    "type": "mouse",
+    "id": "click ivy 1",
+    "pos": [438, 420],
+    "delay_rng": [10000, 12000]
+  }
+]

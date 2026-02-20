@@ -1,0 +1,14 @@
+[
+  {
+    "type": "mouse",
+    "id": "login button",
+    "pos": [477, 472],
+    "delay_rng": [9000, 10000]
+  },
+  {
+    "type": "mouse",
+    "id": "play now button",
+    "pos": [483, 511],
+    "delay_rng": [10000, 12000]
+  }
+]
