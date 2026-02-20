@@ -30,7 +30,9 @@ fn main() -> Result<()> {
     if config.debug {
         simplelog::TermLogger::init(
             simplelog::LevelFilter::Debug,
-            simplelog::Config::default(),
+            simplelog::ConfigBuilder::new()
+                .add_filter_allow_str("rsbot")
+                .build(),
             simplelog::TerminalMode::Mixed,
             simplelog::ColorChoice::Auto,
         )
