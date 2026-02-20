@@ -65,7 +65,12 @@ fn mouse_bez(init_pos: Point, fin_pos: Point) -> CubicBez {
 
 fn move_mouse(enigo: &mut Enigo, target: Point) -> Result<()> {
     const MOUSE_SPEED: u32 = 64;
-    let curve = mouse_bez(get_mouse_pos(), target);
+    let start_pos = get_mouse_pos();
+    debug!(
+        "Moving mouse from ({:.1}, {:.1}) to ({:.1}, {:.1})",
+        start_pos.x, start_pos.y, target.x, target.y
+    );
+    let curve = mouse_bez(start_pos, target);
     let points: Vec<Point> = (0..=MOUSE_SPEED * 100)
         .map(|t| f64::from(t) / (f64::from(MOUSE_SPEED) * 100.0))
         .map(|t| curve.eval(t))
@@ -120,12 +125,13 @@ fn press_key(keycode: char) -> Result<()> {
 fn exec_event(event: &BotEvent) -> Result<()> {
     let sleep_random_delay = |delay_rng: &[u32; 2]| {
         let delay = random_range(delay_rng[0]..=delay_rng[1]);
+        debug!("Sleeping for {} ms", delay);
         std::thread::sleep(Duration::from_millis(delay.into()));
     };
 
     match event {
         BotEvent::Mouse { id, pos, delay_rng } => {
-            debug!("Executing mouse event: {}", id);
+            debug!("Executing mouse event '{}' at ({}, {})", id, pos[0], pos[1]);
             let point = Point::new(pos[0].into(), pos[1].into());
 
             left_click(point)?;
@@ -137,7 +143,7 @@ fn exec_event(event: &BotEvent) -> Result<()> {
             delay_rng,
             count,
         } => {
-            debug!("Executing keypress: {}", id);
+            debug!("Executing keypress '{}': '{}' x{}", id, keycode, count);
 
             for _ in 0..*count {
                 press_key(*keycode)?;
@@ -150,15 +156,23 @@ fn exec_event(event: &BotEvent) -> Result<()> {
 
 pub fn run_event_loop(config: &BotConfig) -> Result<()> {
     let events = read_bot_script(&config.script)?;
+    debug!("Loaded {} events from script", events.len());
+
     let runtime = Duration::from_secs(config.runtime);
     let start_time = Instant::now();
     let end_time = start_time + runtime;
+    debug!("Starting event loop for {} seconds", config.runtime);
 
+    let mut iteration = 0;
     while Instant::now() < end_time {
+        debug!("Starting iteration {}", iteration);
+
         for event in &events {
             exec_event(event)?;
         }
+        iteration += 1;
     }
 
+    debug!("Event loop completed after {} iterations", iteration);
     Ok(())
 }
