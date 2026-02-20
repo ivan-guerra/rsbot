@@ -1,4 +1,1 @@
-build/
-venv/
-__pycache__/
-*.egg-info/
+/target
