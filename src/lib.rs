@@ -147,8 +147,12 @@ fn exec_event(event: &BotEvent) -> Result<()> {
 
             for _ in 0..*count {
                 press_key(*keycode)?;
-                sleep_random_delay(delay_rng);
+
+                // Simulate natural keypress timing
+                let key_delay_ms = Duration::from_millis(random_range(100..=300));
+                std::thread::sleep(key_delay_ms);
             }
+            sleep_random_delay(delay_rng);
         }
     }
     Ok(())
