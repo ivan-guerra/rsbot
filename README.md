@@ -1,85 +1,82 @@
 # rsbot
 
-Create and run a Runescape 3 or Old School Runescape autoclicker script. See
-[this blog post][1] to learn more about the design of this autoclicker bot.
+A RuneScape automation tool written in Rust that executes scripted mouse clicks
+and keypresses. Supports both RuneScape 3 and Old School RuneScape.
 
-### Requirements
+## Features
 
-rsbot only supports Linux. To run this utility, your system must meet the
-following requirements:
+- **Natural mouse movement**: Uses Bézier curves for human-like cursor paths
+- **Randomized delays**: Configurable delay ranges to avoid detection patterns
+- **Mouse and keyboard events**: Support for clicks and keypresses
+- **Configurable runtime**: Set how long the bot should run
+- **Debug logging**: Optional logging to troubleshoot scripts
 
-- Python3.11+
-- [xdotool][2]
+## Requirements
 
-Both requirements can be installed using your distro's package manager. For
-example, on an Arch Linux system:
+rsbot only supports Linux. Your system must have:
 
-```bash
-pacman -S python xdotool
-```
+- Rust toolchain (rustc 1.70+, cargo)
+- X11 display server
 
-### Installation
-
-rsbot is a Python package. Follow the steps below to install the package:
-
-1. Clone the repo:
+## Usage
 
 ```bash
-git clone https://github.com/ivan-guerra/rsbot.github
+rsbot [OPTIONS] <SCRIPT>
 ```
 
-2. Install the package with `pip`:
+**Arguments:**
+
+- `<SCRIPT>` - Path to the bot script JSON file
+
+**Options:**
+
+- `-r, --runtime <SECONDS>` - Script runtime in seconds (default: 3600)
+- `-g, --debug` - Enable debug logging
+- `-h, --help` - Print help information
+- `-V, --version` - Print version information
+
+**Example:**
 
 ```bash
-pip install rsbot/
+# Run a ivy woodcutting script for 30 minutes with debug logging enabled
+rsbot -r 1800 -g scripts/ivy_wc.json
 ```
 
-Once the package is installed, you can run rsbot from the command line via the
-`rsbot` command. Run `rsbot --help` for complete usage info.
+## Bot Script Format
 
-### Bot Script Format
+Bot scripts are JSON arrays containing event objects. Two event types are
+supported:
 
-rsbot has one required argument which is the path to a JSON file containing
-click events. The event script must have the following format:
+### Mouse Event
 
 ```json
 {
-  "events": [
-    {
-      "id": "click bank",
-      "click_box": [
-        [925, 308],
-        [1001, 319],
-        [926, 512],
-        [1001, 507]
-      ],
-      "button": "left",
-      "min_delay_sec": 1,
-      "max_delay_sec": 3
-    }
-  ]
+  "type": "mouse",
+  "id": "click bank",
+  "pos": [925, 308],
+  "delay_rng": [1000, 3000]
 }
 ```
 
-The event script contains a top-level `events` array with one or more click
-events. Each click event has five fields:
+- `type`: Must be `"mouse"`
+- `id`: Description of the event
+- `pos`: `[x, y]` screen coordinates to click
+- `delay_rng`: `[min_ms, max_ms]` random delay range after click
 
-- `id`: A string describing the event.
-- `click_box`: An array of 2D points that form a click box. When this event
-  executes, a click will be performed within the click box's bounds. **Note, the
-  points do not need to form a perfect square.** Any four points forming a box-ish
-  region will be accepted.
-- `button`: Which mouse button to click. Only "left" and "right" buttons are
-  currently supported.
-- `min_delay_sec`: The minimum delay in seconds the script will insert after the
-  click is performed.
-- `max_delay_sec`: The maximum delay in seconds the script will insert after the
-  click is performed.
+### KeyPress Event
 
-It can be tedious to write a click event script by hand. Included in this repo
-is the [`mkscript.py`](scripts/mkscript.py) script. `mkscript.py` allows you to
-input one or more click events and outputs a rsbot ready click event file. Run
-`mkscript.py --help` for complete usage info.
+```json
+{
+  "type": "keypress",
+  "id": "drop items",
+  "keycode": "d",
+  "delay_rng": [100, 200],
+  "count": 28
+}
+```
 
-[1]: https://programmador.com/posts/2024/rsbot/
-[2]: https://www.semicomplete.com/projects/xdotool/
+- `type`: Must be `"keypress"`
+- `id`: Description of the event
+- `keycode`: Single character to press
+- `delay_rng`: `[min_ms, max_ms]` random delay range after all keypresses
+- `count`: Number of times to press the key
