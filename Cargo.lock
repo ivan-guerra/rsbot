@@ -134,22 +134,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a822ea5bc7590f9d40f1ba12c0dc3c2760f3482c6984db1573ad11031420831"
 
 [[package]]
-name = "colorbot"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "device_query",
- "enigo",
- "kurbo",
- "log",
- "rand",
- "serde",
- "serde_json",
- "simplelog",
-]
-
-[[package]]
 name = "colorchoice"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -622,6 +606,22 @@ name = "readmouse"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be105c72a1e6a5a1198acee3d5b506a15676b74a02ecd78060042a447f408d94"
+
+[[package]]
+name = "rsbot"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "device_query",
+ "enigo",
+ "kurbo",
+ "log",
+ "rand",
+ "serde",
+ "serde_json",
+ "simplelog",
+]
 
 [[package]]
 name = "rustix"

@@ -21,7 +21,7 @@ struct Args {
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let config = colorbot::BotConfig {
+    let config = rsbot::BotConfig {
         script: args.script,
         runtime: args.runtime,
         debug: args.debug,
@@ -37,7 +37,7 @@ fn main() -> Result<()> {
         .context("Failed to initialize logger")?;
     }
 
-    colorbot::run_event_loop(&config).context("Failed to run event loop")?;
+    rsbot::run_event_loop(&config).context("Failed to run event loop")?;
 
     Ok(())
 }

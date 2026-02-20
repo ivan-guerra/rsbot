@@ -25,7 +25,6 @@ enum BotEvent {
         id: String,
         pos: [u32; 2],
         delay_rng: [u32; 2],
-        count: u32,
     },
     #[serde(rename = "keypress")]
     KeyPress {
@@ -125,19 +124,12 @@ fn exec_event(event: &BotEvent) -> Result<()> {
     };
 
     match event {
-        BotEvent::Mouse {
-            id,
-            pos,
-            delay_rng,
-            count,
-        } => {
+        BotEvent::Mouse { id, pos, delay_rng } => {
             debug!("Executing mouse event: {}", id);
             let point = Point::new(pos[0].into(), pos[1].into());
 
-            for _ in 0..*count {
-                left_click(point)?;
-                sleep_random_delay(delay_rng);
-            }
+            left_click(point)?;
+            sleep_random_delay(delay_rng);
         }
         BotEvent::KeyPress {
             id,
