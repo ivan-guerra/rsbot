@@ -106,8 +106,8 @@ fn get_mouse_pos() -> Point {
 fn left_click(target: Point) -> Result<()> {
     let mut enigo = Enigo::new(&Settings::default()).context("Failed to init enigo")?;
     let target_rand = Point::new(
-        target.x + f64::from(random_range(-8..=8)),
-        target.y + f64::from(random_range(-8..=8)),
+        target.x + f64::from(random_range(-5..=5)),
+        target.y + f64::from(random_range(-5..=5)),
     );
     debug!(
         "Clicking at ({:.1}, {:.1}) with random offset",
