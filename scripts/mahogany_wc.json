@@ -1,8 +1,38 @@
 [
   {
     "type": "mouse",
-    "id": "click ivy 1",
-    "pos": [438, 420],
-    "delay_rng": [10000, 12000]
+    "id": "start_tree_1",
+    "pos": [466, 583],
+    "delay_rng": [20000, 25000]
+  },
+  {
+    "type": "mouse",
+    "id": "tree_2",
+    "pos": [394, 449],
+    "delay_rng": [20000, 25000]
+  },
+  {
+    "type": "mouse",
+    "id": "tree_1",
+    "pos": [584, 663],
+    "delay_rng": [20000, 25000]
+  },
+  {
+    "type": "mouse",
+    "id": "tree_2",
+    "pos": [394, 449],
+    "delay_rng": [20000, 25000]
+  },
+  {
+    "type": "mouse",
+    "id": "tree_1",
+    "pos": [584, 663],
+    "delay_rng": [20000, 25000]
+  },
+  {
+    "type": "mouse",
+    "id": "drop_inventory",
+    "pos": [0, 0],
+    "delay_rng": [0, 0]
   }
 ]
