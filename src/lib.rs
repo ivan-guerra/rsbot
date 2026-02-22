@@ -153,6 +153,24 @@ fn press_key(keycode: &str) -> Result<()> {
     Ok(())
 }
 
+fn drop_special_log() -> Result<()> {
+    const CTRL_DELAY_MS: u64 = 100;
+
+    press_key("d")?;
+
+    run_xdotool(&["keydown", "Control"])
+        .context("Failed to execute xdotool for Control key down")?;
+    std::thread::sleep(Duration::from_millis(CTRL_DELAY_MS));
+
+    run_xdotool(&["key", "a"]).context("Failed to execute xdotool for 'a' key with Control")?;
+    std::thread::sleep(Duration::from_millis(CTRL_DELAY_MS));
+
+    run_xdotool(&["keyup", "Control"]).context("Failed to execute xdotool for Control key up")?;
+    std::thread::sleep(Duration::from_millis(CTRL_DELAY_MS));
+
+    Ok(())
+}
+
 fn drop_inventory() -> Result<()> {
     const INVENTORY_ROWS: usize = 7;
     const INVENTORY_COLS: usize = 4;
@@ -229,6 +247,11 @@ pub fn run_event_loop(config: &BotConfig) -> Result<()> {
             exec_event(event)?;
         }
         iteration += 1;
+
+        if iteration % 2 == 0 {
+            debug!("Performing special log drop after iteration {}", iteration);
+            drop_special_log().context("Failed to drop special log")?;
+        }
     }
 
     debug!("Event loop completed after {} iterations", iteration);
