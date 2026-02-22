@@ -9,7 +9,6 @@ license = "Unlicense"
 anyhow = "1.0"
 clap = {version = "4.5", features = ["derive"]}
 device_query = "4.0"
-enigo = "0.6"
 kurbo = "0.13"
 log = "0.4"
 rand = "0.10"

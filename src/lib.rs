@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use device_query::{DeviceQuery, DeviceState};
-use enigo::{Button, Coordinate, Direction, Enigo, Key, Keyboard, Mouse, Settings};
 use kurbo::{CubicBez, ParamCurve, Point};
 use log::debug;
 use rand::random_range;
@@ -8,6 +7,7 @@ use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::{Duration, Instant};
 
 #[derive(Debug)]
@@ -29,10 +29,27 @@ enum BotEvent {
     #[serde(rename = "keypress")]
     KeyPress {
         id: String,
-        keycode: char,
+        keycode: String,
         delay_rng: [u32; 2],
         count: u32,
     },
+}
+
+fn read_bot_script(path: &Path) -> Result<Vec<BotEvent>> {
+    let file = File::open(path).context("Failed to open bot script")?;
+    let reader = BufReader::new(file);
+    let events: Vec<BotEvent> =
+        serde_json::from_reader(reader).context("Failed to parse bot script")?;
+
+    Ok(events)
+}
+
+fn run_xdotool(args: &[&str]) -> Result<()> {
+    Command::new("xdotool")
+        .args(args)
+        .output()
+        .context(format!("Failed to execute xdotool with args: {:?}", args))?;
+    Ok(())
 }
 
 fn mouse_bez(init_pos: Point, fin_pos: Point) -> CubicBez {
@@ -63,37 +80,36 @@ fn mouse_bez(init_pos: Point, fin_pos: Point) -> CubicBez {
     CubicBez::new(init_pos, ctrl1, ctrl2, fin_pos)
 }
 
-fn move_mouse(enigo: &mut Enigo, target: Point) -> Result<()> {
-    const MOUSE_SPEED: u32 = 64;
+fn move_mouse(target: Point) -> Result<()> {
+    const MOUSE_SETTLE_DELAY_MS: u64 = 50;
     let start_pos = get_mouse_pos();
-    debug!(
-        "Moving mouse from ({:.1}, {:.1}) to ({:.1}, {:.1})",
-        start_pos.x, start_pos.y, target.x, target.y
+    let target_rand = Point::new(
+        target.x + f64::from(random_range(-2..=2)),
+        target.y + f64::from(random_range(-2..=2)),
     );
-    let curve = mouse_bez(start_pos, target);
-    let points: Vec<Point> = (0..=MOUSE_SPEED * 100)
-        .map(|t| f64::from(t) / (f64::from(MOUSE_SPEED) * 100.0))
+    let curve = mouse_bez(start_pos, target_rand);
+    let points: Vec<Point> = (0..=100)
+        .map(|t| f64::from(t) / 100.0)
         .map(|t| curve.eval(t))
         .collect();
 
+    debug!(
+        "Moving mouse from ({:.1}, {:.1}) to ({:.1}, {:.1})",
+        start_pos.x, start_pos.y, target_rand.x, target_rand.y
+    );
     for point in points {
-        enigo
-            .move_mouse(point.x as i32, point.y as i32, Coordinate::Abs)
-            .context(format!(
-                "Failed to move mouse to ({}, {})",
-                point.x, point.y
-            ))?;
+        let x = point.x.round() as i32;
+        let y = point.y.round() as i32;
+
+        run_xdotool(&["mousemove", &x.to_string(), &y.to_string()]).context(format!(
+            "Failed to execute xdotool for mouse move to ({}, {})",
+            point.x, point.y
+        ))?;
     }
+
+    std::thread::sleep(Duration::from_millis(MOUSE_SETTLE_DELAY_MS));
+
     Ok(())
-}
-
-fn read_bot_script(path: &Path) -> Result<Vec<BotEvent>> {
-    let file = File::open(path).context("Failed to open bot script")?;
-    let reader = BufReader::new(file);
-    let events: Vec<BotEvent> =
-        serde_json::from_reader(reader).context("Failed to parse bot script")?;
-
-    Ok(events)
 }
 
 fn get_mouse_pos() -> Point {
@@ -103,30 +119,58 @@ fn get_mouse_pos() -> Point {
     Point::new(mouse_state.coords.0.into(), mouse_state.coords.1.into())
 }
 
-fn left_click(target: Point) -> Result<()> {
-    let mut enigo = Enigo::new(&Settings::default()).context("Failed to init enigo")?;
-    let target_rand = Point::new(
-        target.x + f64::from(random_range(-5..=5)),
-        target.y + f64::from(random_range(-5..=5)),
-    );
-    debug!(
-        "Clicking at ({:.1}, {:.1}) with random offset",
-        target_rand.x, target_rand.y
-    );
-
-    move_mouse(&mut enigo, target_rand).context("Failed to move mouse to click location")?;
-    enigo
-        .button(Button::Left, Direction::Click)
-        .context("Failed to left click")?;
+fn left_click() -> Result<()> {
+    run_xdotool(&["click", "1"]).context("Failed to execute xdotool for left click")?;
     Ok(())
 }
 
-fn press_key(keycode: char) -> Result<()> {
-    let mut enigo = Enigo::new(&Settings::default()).context("Failed to init enigo")?;
+fn shift_left_click() -> Result<()> {
+    const SHIFT_DELAY_MS: u64 = 100;
 
-    enigo
-        .key(Key::Unicode(keycode), Direction::Click)
-        .context(format!("Failed to press key {}", keycode))?;
+    run_xdotool(&["keydown", "Shift"]).context("Failed to execute xdotool for Shift key down")?;
+    std::thread::sleep(Duration::from_millis(SHIFT_DELAY_MS));
+
+    run_xdotool(&["click", "1"]).context("Failed to execute xdotool for left click with Shift")?;
+    std::thread::sleep(Duration::from_millis(SHIFT_DELAY_MS));
+
+    run_xdotool(&["keyup", "Shift"]).context("Failed to execute xdotool for Shift key up")?;
+    std::thread::sleep(Duration::from_millis(SHIFT_DELAY_MS));
+
+    Ok(())
+}
+
+fn press_key(keycode: &str) -> Result<()> {
+    const KEY_DELAY_MIN_MS: u64 = 100;
+    const KEY_DELAY_MAX_MS: u64 = 150;
+
+    run_xdotool(&["key", keycode])
+        .context(format!("Failed to execute xdotool for key '{}'", keycode))?;
+
+    std::thread::sleep(Duration::from_millis(random_range(
+        KEY_DELAY_MIN_MS..=KEY_DELAY_MAX_MS,
+    )));
+
+    Ok(())
+}
+
+fn drop_inventory() -> Result<()> {
+    const INVENTORY_ROWS: usize = 7;
+    const INVENTORY_COLS: usize = 4;
+    const BASE_X: f64 = 780.0;
+    const BASE_Y: f64 = 700.0;
+    const COL_SPACING: f64 = 50.0;
+    const ROW_SPACING: f64 = 37.0;
+
+    for row in 0..INVENTORY_ROWS {
+        for col in 0..INVENTORY_COLS {
+            let x = BASE_X + col as f64 * COL_SPACING;
+            let y = BASE_Y + row as f64 * ROW_SPACING;
+            let inventory_pos = Point::new(x, y);
+
+            move_mouse(inventory_pos)?;
+            shift_left_click().context("Failed to perform Shift + Click for inventory drop")?;
+        }
+    }
     Ok(())
 }
 
@@ -140,10 +184,16 @@ fn exec_event(event: &BotEvent) -> Result<()> {
     match event {
         BotEvent::Mouse { id, pos, delay_rng } => {
             debug!("Executing mouse event '{}' at ({}, {})", id, pos[0], pos[1]);
-            let point = Point::new(pos[0].into(), pos[1].into());
+            if id.contains("drop_inventory") {
+                debug!("Dropping inventory");
+                drop_inventory().context("Failed to drop inventory")?;
+            } else {
+                let point = Point::new(pos[0].into(), pos[1].into());
 
-            left_click(point)?;
-            sleep_random_delay(delay_rng);
+                move_mouse(point)?;
+                left_click()?;
+                sleep_random_delay(delay_rng);
+            }
         }
         BotEvent::KeyPress {
             id,
@@ -154,11 +204,7 @@ fn exec_event(event: &BotEvent) -> Result<()> {
             debug!("Executing keypress '{}': '{}' x{}", id, keycode, count);
 
             for _ in 0..*count {
-                press_key(*keycode)?;
-
-                // Simulate natural keypress timing
-                let key_delay_ms = Duration::from_millis(random_range(100..=300));
-                std::thread::sleep(key_delay_ms);
+                press_key(keycode)?;
             }
             sleep_random_delay(delay_rng);
         }
